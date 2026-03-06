@@ -79,6 +79,31 @@ export default function Services() {
               <p className="text-muted text-sm leading-relaxed">
                 {s.description}
               </p>
+              {s.title === "Legalização Automóvel" ? (
+                <a
+                  href="/legalizacao-automovel"
+                  className="inline-flex items-center gap-1 mt-4 text-primary font-semibold no-underline"
+                >
+                  Saiba mais
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+              ) : s.title === "Serviços IMT" ? (
+                <a
+                  href="/servicos-imt"
+                  className="inline-flex items-center gap-1 mt-4 text-primary font-semibold no-underline"
+                >
+                  Saiba mais
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+              ) : s.title === "Outros Serviços" ? (
+                <a
+                  href="/outros"
+                  className="inline-flex items-center gap-1 mt-4 text-primary font-semibold no-underline"
+                >
+                  Saiba mais
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+              ) : null}
             </div>
           ))}
         </div>

@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
 interface Testimonial {
   initials: string;
   name: string;
@@ -33,10 +37,28 @@ const testimonials: Testimonial[] = [
 ];
 
 export default function Testimonials() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const items = Array.from(track.children) as HTMLElement[];
+    if (items.length === 0) return;
+    const id = setInterval(() => {
+      setIndex((prev) => {
+        const next = (prev + 1) % items.length;
+        const el = items[next];
+        track.scrollTo({ left: el.offsetLeft, behavior: "smooth" });
+        return next;
+      });
+    }, 5500);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <section className="py-24 px-6 bg-white">
       <div className="max-w-[1200px] mx-auto">
-        {/* Header */}
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-1.5 text-primary text-xs font-bold uppercase tracking-widest mb-3">
             <span className="w-5 h-0.5 bg-primary inline-block" />
@@ -47,14 +69,12 @@ export default function Testimonials() {
           </h2>
         </div>
 
-        {/* Scrollable track */}
-        <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar snap-x">
+        <div ref={trackRef} className="flex gap-6 overflow-x-auto pb-4 no-scrollbar snap-x">
           {testimonials.map((t) => (
             <div
               key={t.name}
               className="min-w-[340px] flex-shrink-0 bg-[var(--bg)] rounded-2xl p-8 border-[1.5px] border-[var(--border)] snap-start hover:-translate-y-1 hover:shadow-[0_8px_28px_rgba(7,17,43,0.09)] transition-all duration-200"
             >
-              {/* Stars */}
               <div className="flex gap-0.5 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <span
@@ -71,7 +91,6 @@ export default function Testimonials() {
                 &ldquo;{t.text}&rdquo;
               </p>
 
-              {/* Author */}
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-[#00D4FF] flex items-center justify-center font-display font-extrabold text-white text-sm flex-shrink-0">
                   {t.initials}

@@ -19,6 +19,9 @@ const config: Config = {
         display: ["var(--font-syne)", "sans-serif"],
         body: ["var(--font-dm-sans)", "sans-serif"],
       },
+      spacing: {
+        13: "3.25rem",
+      },
     },
   },
   plugins: [],
