@@ -8,6 +8,7 @@ import WhyUs from "@/components/WhyUs";
 import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import CocTeaser from "@/components/CocTeaser";
+import ContactCTA from "@/components/ContactCTA";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
       <CocTeaser />
       <IsvSimulator />
       <Process />
+      <ContactCTA />
       <Testimonials />
       <Footer />
     </main>

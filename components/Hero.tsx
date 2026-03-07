@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-navy pt-24 pb-0 hero-grid">
+    <section className="relative overflow-hidden bg-navy pt-24 pb-16 hero-grid">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -15,15 +15,16 @@ export default function Hero() {
         }}
       />
 
-      <div className="relative z-10 max-w-[1200px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-end">
-        <div className="pb-20 lg:pb-28">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/20 border border-primary/40 text-white/85 text-[0.72rem] font-bold uppercase tracking-widest mb-6">
+      <div className="relative z-10 max-w-[1200px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="flex flex-col justify-center py-8 lg:py-12">
+          <div className="inline-flex w-fit items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/20 border border-primary/40 text-white/85 text-[0.72rem] font-bold uppercase tracking-widest mb-6">
             <span className="material-symbols-outlined text-sm">verified</span>
             Serviços IMT e Legalização
           </div>
 
           <h2 className="font-display font-extrabold text-white text-5xl lg:text-6xl leading-[1.1] tracking-tight mb-6">
-            Legalização e<br />
+            Legalização e
+            <br />
             Documentação Automóvel{" "}
             <em className="not-italic text-primary">sem complicações</em>
           </h2>
@@ -39,8 +40,11 @@ export default function Hero() {
               className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-7 py-4 rounded-xl font-display font-bold text-base transition-all shadow-xl shadow-primary/30 hover:-translate-y-0.5"
             >
               Contactar
-              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+              <span className="material-symbols-outlined text-[18px]">
+                arrow_forward
+              </span>
             </a>
+
             <a
               href="#services"
               className="inline-flex items-center bg-white/10 hover:bg-white/15 border border-white/20 text-white px-7 py-4 rounded-xl font-display font-bold text-base transition-all"
@@ -50,8 +54,8 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="relative hidden lg:block self-end lg:-mt-16">
-          <div className="relative h-[420px] rounded-t-[20px] overflow-hidden">
+        <div className="relative hidden lg:block">
+          <div className="relative h-[520px] rounded-[24px] overflow-hidden">
             <Image
               src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1800"
               alt="Aperto de mão fechando um negócio"
@@ -59,7 +63,7 @@ export default function Hero() {
               className="object-cover brightness-[0.82]"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-navy/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-navy/50 via-navy/10 to-transparent" />
           </div>
 
           <div className="absolute bottom-7 left-7 bg-white rounded-2xl px-5 py-4 flex items-center gap-3 shadow-2xl float-slow">
@@ -90,7 +94,7 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="absolute -top-3 left-0 bg-white rounded-2xl px-5 py-4 flex items-center gap-3 shadow-2xl float-slow float-delay-2">
+          <div className="absolute top-24 left-[-18px] bg-white rounded-2xl px-5 py-4 flex items-center gap-3 shadow-2xl float-slow float-delay-2">
             <div className="w-11 h-11 rounded-full bg-amber-100 flex items-center justify-center">
               <span className="material-symbols-outlined text-amber-600 text-xl">
                 grade
@@ -105,17 +109,25 @@ export default function Hero() {
           </div>
         </div>
       </div>
+
       <style jsx>{`
         @keyframes floatSlow {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-8px); }
+          0% {
+            transform: translateY(0);
+          }
+          100% {
+            transform: translateY(-8px);
+          }
         }
+
         .float-slow {
           animation: floatSlow 6.5s ease-in-out infinite alternate;
         }
+
         .float-delay-1 {
           animation-delay: 1.2s;
         }
+
         .float-delay-2 {
           animation-delay: 2.4s;
         }

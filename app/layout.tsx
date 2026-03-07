@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import ScrollTop from "@/components/ScrollTop";
 
 const plusJakartaDisplay = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -40,7 +41,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <ScrollTop />
+      </body>
     </html>
   );
 }
