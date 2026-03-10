@@ -1,119 +1,114 @@
-# LegalizePT — Next.js + TypeScript
+# Pormenor Legal — Plataforma de Legalização Automóvel
 
-Website de legalização automóvel construído com **Next.js 14**, **TypeScript** e **Tailwind CSS**.
+![Pormenor Legal](https://pormenor.etos.pt/og-image.jpg)
 
-## Stack
+Bem-vindo ao repositório oficial da **Pormenor Legal**, uma plataforma web moderna desenvolvida para simplificar o processo de legalização e importação de veículos em Portugal. Este projeto inclui um simulador de ISV (Imposto Sobre Veículos) de última geração, guias de importação e um sistema de SEO programático.
 
-- **Next.js 14** (App Router)
-- **TypeScript** (strict mode)
-- **Tailwind CSS v3**
-- **Google Fonts** — Syne (display) + DM Sans (body)
-- **Material Symbols** (ícones)
+## 🚀 Funcionalidades Principais
 
-## Estrutura
+### 1. Simulador ISV 2025/2026
+Um motor de cálculo fiscal preciso e atualizado com as regras do Orçamento do Estado 2025.
+- **Cálculo em Tempo Real**: Cilindrada, CO₂, Partículas, Idade e Tipo de Combustível.
+- **Suporte Completo**: Veículos Novos vs Usados, Gasolina, Diesel, Híbridos (HEV/PHEV) e Elétricos.
+- **Regras Avançadas**:
+  - Desconto de idade unificado para importados da UE.
+  - Agravamento para Diesel com partículas > 0.001g/km.
+  - Benefícios fiscais para Híbridos Plug-in com autonomia ≥ 50km.
 
-```
+### 2. Arquitetura SEO Programática
+O site gera automaticamente centenas de páginas otimizadas para motores de busca (Google).
+- **Páginas por Marca**: `/legalizacao/bmw`, `/legalizacao/mercedes`, `/legalizacao/tesla`, etc.
+- **Páginas por País**: `/importar-de/alemanha`, `/importar-de/franca`, `/importar-de/espanha`, etc.
+- **Infraestrutura Técnica**:
+  - `sitemap.xml` e `robots.txt` gerados automaticamente.
+  - Metadata dinâmica e JSON-LD Schema (FAQ, Organization, Service).
+
+### 3. Pedidos de COC e Contactos
+- Formulários integrados para pedido de Certificado de Conformidade.
+- Sistema de envio de emails via PHP (`send-mail.php`) sem custos externos.
+- Validação de formulários e feedback ao utilizador.
+
+## 🛠️ Stack Tecnológico
+
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+- **Linguagem**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode)
+- **Estilos**: [Tailwind CSS](https://tailwindcss.com/)
+- **Fontes**: Google Fonts (Syne + DM Sans)
+- **Ícones**: Material Symbols
+- **Deploy**: Exportação Estática (`output: export`) compatível com cPanel/Apache.
+
+## 📂 Estrutura do Projeto
+
+```bash
 legalizept/
 ├── app/
-│   ├── globals.css        # CSS global + variáveis CSS
-│   ├── layout.tsx         # Root layout + fonts
-│   └── page.tsx           # Página principal
+│   ├── layout.tsx           # Layout base com Metadata e Fontes
+│   ├── page.tsx             # Homepage
+│   ├── simulador-isv/       # Pillar Page: Simulador + FAQs
+│   ├── importar-carro/      # Pillar Page: Guia de Importação
+│   ├── legalizacao/         # [SEO] Páginas dinâmicas por Marca
+│   └── importar-de/         # [SEO] Páginas dinâmicas por País
 ├── components/
-│   ├── Header.tsx         # Navegação sticky
-│   ├── Hero.tsx           # Secção hero com imagem
-│   ├── StatsBar.tsx       # Barra de estatísticas
-│   ├── IsvSimulator.tsx   # Simulador ISV interativo (Frontend)
-│   ├── Services.tsx       # Grid de serviços
-│   ├── Process.tsx        # Processo passo-a-passo
-│   ├── WhyUs.tsx          # Porquê escolher-nos
-│   ├── Testimonials.tsx   # Depoimentos de clientes
-│   └── Footer.tsx         # Rodapé + formulário de contacto
+│   ├── IsvSimulator.tsx     # Componente React do Simulador
+│   ├── JsonLd.tsx           # Injector de Schema.org
+│   └── ...
 ├── lib/
-│   └── isv/               # Motor de Cálculo de ISV (Domain Layer)
-│       ├── index.ts       # Entry point
-│       ├── types.ts       # Definições de tipos
-│       ├── tables.ts      # Tabelas oficiais (2025/2026)
-│       ├── calculation.ts # Lógica de cálculo
-│       └── test-script.ts # Script de verificação
-├── next.config.ts
-├── tailwind.config.ts
-├── tsconfig.json
-└── package.json
+│   ├── isv/                 # Motor de Cálculo (Domain Logic)
+│   │   ├── calculation.ts   # Algoritmo fiscal
+│   │   └── tables.ts        # Tabelas oficiais OE2025
+│   └── seo.ts               # Configurações globais de SEO
+└── public/
+    ├── .htaccess            # Configuração Apache para rotas limpas
+    └── send-mail.php        # Backend simples para envio de emails
 ```
 
-## Motor de Cálculo de ISV (Atualização 2026)
+## ⚡ Como Começar
 
-O simulador de ISV foi refatorado para utilizar uma arquitetura robusta e baseada em dados oficiais.
+### Pré-requisitos
+- Node.js 18+
+- npm ou yarn
 
-### Características
-- **Base Legal**: Orçamento do Estado 2025 e alterações previstas para 2026.
-- **Tabelas**: Configuradas em `lib/isv/tables.ts`.
-- **Lógica**: Centralizada em `lib/isv/calculation.ts`.
-- **Suporte**:
-  - Veículos Novos vs Usados (Importados da UE com desconto de idade).
-  - Gasolina, Diesel, Híbridos (HEV/MHEV/PHEV), Elétricos, GPL.
-  - Agravamento Diesel (Partículas).
-  - Benefício Fiscal para Híbridos Plug-in (Autonomia >= 50km, CO2 < 50g/km).
-  - Redução por idade unificada (Componente Cilindrada + Ambiental).
+### Instalação
 
-### Como Atualizar as Tabelas (Anualmente)
-1. Abra o ficheiro `lib/isv/tables.ts`.
-2. Atualize os valores nos arrays `cc`, `co2`, e `ageReduction` conforme o Orçamento do Estado do novo ano.
-3. Se houver alterações estruturais na lei (ex: nova fórmula), edite `lib/isv/calculation.ts`.
+```bash
+# Clonar o repositório
+git clone https://github.com/pormenor/legalizept.git
 
-### Como Correr os Testes do Simulador
-Para validar o cálculo com cenários reais:
+# Entrar na pasta
+cd legalizept
+
+# Instalar dependências
+npm install
+```
+
+### Desenvolvimento Local
+
+```bash
+npm run dev
+# Aceda a http://localhost:3000
+```
+
+### Build para Produção (cPanel)
+
+```bash
+npm run build
+```
+Isto irá gerar uma pasta `out` com o site estático pronto a ser enviado para a pasta `public_html` do seu servidor.
+
+## 🧪 Testes
+
+O projeto inclui scripts para validar o motor de cálculo do ISV:
 
 ```bash
 npx tsx lib/isv/test-script.ts
 ```
 
-## Arquitetura SEO (Novo)
+## 🌍 SEO e Sitemaps
 
-O projeto implementa uma estratégia de SEO programático para maximizar a visibilidade orgânica.
+O ficheiro `sitemap.xml` é gerado automaticamente durante o build. Para adicionar novas marcas ou países às páginas programáticas, edite as constantes em:
+- `app/legalizacao/[marca]/page.tsx`
+- `app/importar-de/[pais]/page.tsx`
 
-### 1. Páginas Programáticas
-Foram criadas rotas dinâmicas geradas estaticamente (`generateStaticParams`) para cobrir centenas de combinações de pesquisa:
+---
 
-- **Por Marca**: `/legalizacao/[marca]` (ex: `/legalizacao/bmw`, `/legalizacao/mercedes`)
-- **Por País**: `/importar-de/[pais]` (ex: `/importar-de/alemanha`, `/importar-de/franca`)
-
-### 2. Infraestrutura Técnica
-- **Metadata Dinâmica**: Títulos e descrições otimizados automaticamente para cada página.
-- **JSON-LD Schema**: Dados estruturados para Organização, WebSite, FAQPage, Service e Article.
-- **Sitemap.xml**: Gerado automaticamente em `app/sitemap.ts`.
-- **Robots.txt**: Configurado em `app/robots.ts`.
-
-### 3. Como Adicionar Novas Páginas SEO
-Para adicionar novas marcas ou países, edite as constantes nos respetivos ficheiros:
-- **Marcas**: Adicione ao array `BRANDS` em `app/legalizacao/[marca]/page.tsx`.
-- **Países**: Adicione ao array `COUNTRIES` em `app/importar-de/[pais]/page.tsx`.
-
-Ao reconstruir o site (`npm run build`), o Next.js irá gerar automaticamente as novas páginas estáticas HTML.
-
-## Início Rápido
-
-```bash
-# Instalar dependências
-npm install
-
-# Servidor de desenvolvimento
-npm run dev
-
-# Build de produção
-npm run build
-npm start
-```
-
-Abra [http://localhost:3000](http://localhost:3000) no browser.
-
-## Funcionalidades
-
-- ✅ Simulador de ISV com cálculo real (cilindrada, CO₂, combustível, ano, origem)
-- ✅ Formulário de contacto com feedback de sucesso
-- ✅ Navegação smooth-scroll
-- ✅ Design totalmente responsivo (mobile-first)
-- ✅ Tipagem TypeScript estrita em todos os componentes
-- ✅ Optimização de imagens com `next/image`
-- ✅ Fontes optimizadas com `next/font/google`
-- ✅ **SEO Avançado e Programático**
+Desenvolvido com ❤️ pela **Pormenor Legal**.
