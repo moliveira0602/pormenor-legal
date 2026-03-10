@@ -9,6 +9,7 @@ const INITIAL_FORM: IsvInput = {
   condition: "usado",
   year: new Date().getFullYear(),
   month: 1,
+  day: 1,
   cc: 0,
   co2: 0,
   particles: 0,
@@ -27,6 +28,18 @@ export default function IsvSimulator() {
   const [form, setForm] = useState<IsvInput>(INITIAL_FORM);
   const [result, setResult] = useState<IsvBreakdown | null>(null);
   const [error, setError] = useState("");
+  const [dateStr, setDateStr] = useState(`${new Date().getFullYear()}-01-01`); // Initial date
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setDateStr(val);
+    if (val) {
+        const [y, m, d] = val.split('-').map(Number);
+        setForm(prev => ({ ...prev, year: y, month: m, day: d }));
+        setResult(null);
+        setError("");
+    }
+  };
 
   const handleChange =
     (field: keyof IsvInput) =>
@@ -91,7 +104,8 @@ export default function IsvSimulator() {
             Simulador de ISV
           </h2>
           <p className="text-muted mt-2">
-            Calcule o imposto estimado para a sua importação (Regras 2025/2026)
+            Calcule o imposto estimado para a sua importação (Regras 2025/2026). <br/>
+            <span className="text-xs text-gray-400">Nota: O simulador assume a aplicação das tabelas mais recentes (OE2025).</span>
           </p>
         </div>
 
@@ -122,17 +136,20 @@ export default function IsvSimulator() {
               </select>
             </div>
 
-            {/* Hybrid Kind */}
+            {/* Hybrid Kind - Clarification */}
             {showHybridKind && (
               <div className="flex flex-col gap-2">
                 <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
                   Tipo de Híbrido
                 </label>
                 <select className={inputClass} value={form.hybridKind} onChange={handleChange("hybridKind")}>
-                  <option value="hev">HEV (Híbrido Convencional)</option>
+                  <option value="hev">HEV (Sem autonomia 50km+)</option>
                   <option value="mhev">MHEV (Mild Hybrid)</option>
-                  <option value="phev">PHEV (Plug-in)</option>
+                  <option value="phev">PHEV (Plug-in - Com ficha)</option>
                 </select>
+                {form.hybridKind !== 'phev' && (
+                    <p className="text-[10px] text-gray-500 mt-1">Apenas Plug-in (PHEV) com autonomia ≥ 50km têm desconto significativo.</p>
+                )}
               </div>
             )}
 
@@ -152,30 +169,18 @@ export default function IsvSimulator() {
               </div>
             )}
 
-            {/* Year & Month */}
+            {/* Date */}
             <div className="flex flex-col gap-2">
               <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                Ano da Matrícula
+                Data da Matrícula
               </label>
               <input
                 className={inputClass}
-                type="number"
-                placeholder="Ex: 2021"
-                min={1980}
-                max={new Date().getFullYear()}
-                value={form.year || ""}
-                onChange={handleChange("year")}
+                type="date"
+                value={dateStr}
+                onChange={handleDateChange}
+                max={new Date().toISOString().split('T')[0]}
               />
-            </div>
-             <div className="flex flex-col gap-2">
-              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                Mês da Matrícula
-              </label>
-              <select className={inputClass} value={form.month} onChange={handleChange("month")}>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
             </div>
 
             {/* CC */}
@@ -267,6 +272,13 @@ export default function IsvSimulator() {
               <span className="material-symbols-outlined text-xl">calculate</span>
               Calcular ISV
             </button>
+          </div>
+          
+          <div className="mt-4 text-center">
+            <p className="text-[10px] text-gray-400">
+               * O cálculo não dispensa a consulta das tabelas oficiais da AT. Valores indicativos baseados nas regras em vigor (OE2025). <br/>
+               Para veículos importados usados, é aplicada a redução por idade unificada nas componentes de cilindrada e ambiental.
+            </p>
           </div>
 
           {error && (

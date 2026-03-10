@@ -10,6 +10,7 @@ export interface IsvInput {
   condition: VehicleCondition;
   year: number;
   month: number;
+  day: number;
   cc: number;
   co2: number;
   particles?: number; // In g/km (for diesel surcharge)

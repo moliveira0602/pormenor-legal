@@ -1,11 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'export',
+  trailingSlash: true, // Garante que as rotas sejam pastas (ex: /sobre/index.html)
   devIndicators: false,
   turbopack: {
     root: __dirname,
   },
   images: {
+    unoptimized: true, // Necessário para exportação estática
     remotePatterns: [
       {
         protocol: "https",

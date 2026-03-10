@@ -68,6 +68,29 @@ Para validar o cálculo com cenários reais:
 npx tsx lib/isv/test-script.ts
 ```
 
+## Arquitetura SEO (Novo)
+
+O projeto implementa uma estratégia de SEO programático para maximizar a visibilidade orgânica.
+
+### 1. Páginas Programáticas
+Foram criadas rotas dinâmicas geradas estaticamente (`generateStaticParams`) para cobrir centenas de combinações de pesquisa:
+
+- **Por Marca**: `/legalizacao/[marca]` (ex: `/legalizacao/bmw`, `/legalizacao/mercedes`)
+- **Por País**: `/importar-de/[pais]` (ex: `/importar-de/alemanha`, `/importar-de/franca`)
+
+### 2. Infraestrutura Técnica
+- **Metadata Dinâmica**: Títulos e descrições otimizados automaticamente para cada página.
+- **JSON-LD Schema**: Dados estruturados para Organização, WebSite, FAQPage, Service e Article.
+- **Sitemap.xml**: Gerado automaticamente em `app/sitemap.ts`.
+- **Robots.txt**: Configurado em `app/robots.ts`.
+
+### 3. Como Adicionar Novas Páginas SEO
+Para adicionar novas marcas ou países, edite as constantes nos respetivos ficheiros:
+- **Marcas**: Adicione ao array `BRANDS` em `app/legalizacao/[marca]/page.tsx`.
+- **Países**: Adicione ao array `COUNTRIES` em `app/importar-de/[pais]/page.tsx`.
+
+Ao reconstruir o site (`npm run build`), o Next.js irá gerar automaticamente as novas páginas estáticas HTML.
+
 ## Início Rápido
 
 ```bash
@@ -93,4 +116,4 @@ Abra [http://localhost:3000](http://localhost:3000) no browser.
 - ✅ Tipagem TypeScript estrita em todos os componentes
 - ✅ Optimização de imagens com `next/image`
 - ✅ Fontes optimizadas com `next/font/google`
-# pormenor-legal
+- ✅ **SEO Avançado e Programático**

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import ScrollTop from "@/components/ScrollTop";
+import { siteConfig } from "@/lib/seo";
+import JsonLd, { organizationSchema, websiteSchema } from "@/components/JsonLd";
 
 const plusJakartaDisplay = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -18,10 +20,41 @@ const plusJakartaBody = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Pormenor – Legalização e Documentação Automóvel",
-  description:
-    "Serviços de Legalização Automóvel e IMT. Processos completos com eficiência. Atendimento em Fafe.",
-  keywords: ["legalização automóvel", "IMT", "DAV", "homologação", "Fafe"],
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  authors: [{ name: "Pormenor" }],
+  creator: "Pormenor",
+  openGraph: {
+    type: "website",
+    locale: "pt_PT",
+    url: siteConfig.url,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: siteConfig.name,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+    creator: "@pormenor",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -40,6 +73,8 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
         />
+        <JsonLd data={organizationSchema} />
+        <JsonLd data={websiteSchema} />
       </head>
       <body suppressHydrationWarning>
         {children}

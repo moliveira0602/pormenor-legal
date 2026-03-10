@@ -16,15 +16,20 @@ function calculateComponent(value: number, table: IsvTableEntry[]) {
   return Math.max(0, raw);
 }
 
-function calculateAge(year: number, month: number): number {
+function calculateAge(year: number, month: number, day: number): number {
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-
-  let ageInMonths = (currentYear - year) * 12 + (currentMonth - month);
+  // To be precise with tax age rules (which are often by month, but sometimes day matters for the exact turn of the year)
+  // Standard ISV calculation usually considers the age in full years or specific brackets.
+  // The official table uses "Up to 1 year", "1 to 2 years". 
+  // A car is "1 year old" exactly on the same day next year.
+  // Let's use exact date diff converted to years.
   
-  // Ensure we don't get negative age for future dates (should be handled by validation but safe to clamp)
-  return Math.max(0, ageInMonths / 12);
+  const registrationDate = new Date(year, month - 1, day);
+  const diffTime = Math.abs(now.getTime() - registrationDate.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+  const ageInYears = diffDays / 365.25; // Approximate including leap years
+
+  return Math.max(0, ageInYears);
 }
 
 export function calculateIsv(input: IsvInput): IsvBreakdown {
@@ -96,7 +101,7 @@ export function calculateIsv(input: IsvInput): IsvBreakdown {
   let ageYears = 0;
 
   if (input.origin === "eu" && input.condition === "usado") {
-    ageYears = calculateAge(input.year, input.month);
+    ageYears = calculateAge(input.year, input.month, input.day);
     // Find reduction bracket
     const bracket = tables.ageReduction.find(
       (r) => ageYears > r.minYears && ageYears <= r.maxYears

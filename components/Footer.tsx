@@ -32,7 +32,10 @@ const contacts: ContactInfo[] = [
 
 export default function Footer({ showContacts = true }: { showContacts?: boolean }) {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const [assuntoParam, setAssuntoParam] = useState("");
+  
   useEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search);
@@ -43,9 +46,40 @@ export default function Footer({ showContacts = true }: { showContacts?: boolean
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setError("");
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("nome"),
+      email: formData.get("email"),
+      phone: formData.get("telemovel"),
+      subject: formData.get("assunto"),
+      vin: formData.get("vin"),
+      message: formData.get("mensagem"),
+    };
+
+    try {
+      const response = await fetch("/send-mail.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        setError("Ocorreu um erro ao enviar. Por favor tente novamente ou use os contactos diretos.");
+      }
+    } catch (err) {
+      setError("Ocorreu um erro ao enviar. Por favor tente novamente ou use os contactos diretos.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -218,11 +252,13 @@ export default function Footer({ showContacts = true }: { showContacts?: boolean
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-primary hover:bg-opacity-90 text-white font-semibold py-4 px-6 rounded-lg transition duration-200 shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                    disabled={isSubmitting}
+                    className="w-full bg-primary hover:bg-opacity-90 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition duration-200 shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                   >
-                    <span>Enviar Mensagem</span>
-                    <span className="material-symbols-outlined text-sm">send</span>
+                    <span>{isSubmitting ? "A enviar..." : "Enviar Mensagem"}</span>
+                    {!isSubmitting && <span className="material-symbols-outlined text-sm">send</span>}
                   </button>
+                  {error && <p className="text-red-400 text-sm text-center mt-2">{error}</p>}
                 </form>
               )}
             </div>

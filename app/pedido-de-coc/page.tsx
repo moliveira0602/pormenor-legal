@@ -1,13 +1,52 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-export const metadata = {
-  title: "Pedido de COC | Pormenor",
-  description: "Solicite o Certificado de Conformidade (COC) para o seu veículo com a Pormenor.",
-};
-
 export default function PedidoDeCOC() {
+  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      plate: formData.get("plate"),
+      vin: formData.get("vin"),
+      message: formData.get("message"),
+      subject: "Pedido de COC",
+    };
+
+    try {
+      const response = await fetch("/send-mail.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        setError("Ocorreu um erro ao enviar o pedido. Por favor tente novamente.");
+      }
+    } catch (err) {
+      setError("Ocorreu um erro ao enviar o pedido. Por favor tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-white">
       <Header />
@@ -114,22 +153,46 @@ export default function PedidoDeCOC() {
       <section id="form" className="py-12 px-6 bg-[var(--navy)]">
         <div className="max-w-[900px] mx-auto">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-10">
-            <h3 className="text-white font-display font-extrabold text-2xl mb-2">Solicitar COC</h3>
-            <p className="text-white/70 mb-6">Preencha os dados do veículo para avançarmos com o pedido.</p>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Nome" />
-                <input className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Email" type="email" />
+            {submitted ? (
+              <div className="bg-green-500/15 border border-green-500/30 rounded-2xl p-8 text-center">
+                <span className="material-symbols-outlined text-green-400 text-4xl block mb-3">
+                  check_circle
+                </span>
+                <p className="font-bold text-lg text-white">Pedido enviado com sucesso!</p>
+                <p className="text-white/50 text-sm mt-1">
+                  Entraremos em contacto brevemente para confirmar os dados e apresentar o orçamento.
+                </p>
+                <button 
+                    onClick={() => setSubmitted(false)}
+                    className="mt-6 text-primary hover:text-white text-sm font-semibold"
+                >
+                    Enviar novo pedido
+                </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Matrícula" />
-                <input className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="VIN" />
-              </div>
-              <textarea className="w-full h-[120px] bg-white/10 border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm resize-none" placeholder="Mensagem adicional" />
-              <button type="submit" className="w-full h-[50px] bg-primary hover:bg-primary-dark rounded-lg font-display font-semibold text-white">
-                Enviar Pedido
-              </button>
-            </form>
+            ) : (
+                <>
+                <h3 className="text-white font-display font-extrabold text-2xl mb-2">Solicitar COC</h3>
+                <p className="text-white/70 mb-6">Preencha os dados do veículo para avançarmos com o pedido.</p>
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input name="name" required className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Nome" />
+                    <input name="email" required className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Email" type="email" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input name="phone" className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Telemóvel" type="tel" />
+                    <input name="plate" className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Matrícula (opcional)" />
+                </div>
+                 <div className="grid grid-cols-1 gap-4">
+                    <input name="vin" className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Número de Chassis (VIN)" />
+                </div>
+                <textarea name="message" className="w-full h-[120px] bg-white/10 border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm resize-none" placeholder="Mensagem adicional (opcional)" />
+                <button type="submit" disabled={isSubmitting} className="w-full h-[50px] bg-primary hover:bg-primary-dark rounded-lg font-display font-semibold text-white disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    {isSubmitting ? "A enviar..." : "Enviar Pedido"}
+                </button>
+                {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+                </form>
+                </>
+            )}
           </div>
         </div>
       </section>

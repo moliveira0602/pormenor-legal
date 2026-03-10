@@ -9,6 +9,13 @@ import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import CocTeaser from "@/components/CocTeaser";
 import ContactCTA from "@/components/ContactCTA";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Pormenor - Legalização Automóvel e Importação de Veículos",
+  description: "Especialistas em Legalização Automóvel em Portugal. Tratamos de todo o processo de importação, ISV, IMT e matrículas. Simulador Gratuito.",
+  keywords: ["legalização automóvel", "importar carros", "agência legalização", "matrículas portugal", "imt fafe", "pormenor legalização"],
+};
 
 export default function Home() {
   return (
