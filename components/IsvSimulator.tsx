@@ -1,159 +1,83 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { calculateIsv, IsvInput, IsvBreakdown, FuelType, Origin, VehicleCategory, Cycle, HybridKind, VehicleCondition } from "../lib/isv";
 
-type FuelType = "diesel" | "gasolina" | "hibrido" | "eletrico";
-type Origin = "eu" | "noneu";
-type VehicleCategory = "M1" | "N1";
-type Cycle = "NEDC" | "WLTP";
-type HybridKind = "mhev" | "hev" | "phev";
-type EuroNorm = "Euro 4" | "Euro 5" | "Euro 6" | "Euro 6d";
-
-interface FormState {
-  fuel: FuelType;
-  year: string;
-  cc: string;
-  co2: string;
-  origin: Origin;
-  category: VehicleCategory;
-  cycle: Cycle;
-  hybridKind?: HybridKind;
-  euro?: EuroNorm;
-  transferResidence: boolean;
-  disability: boolean;
-  taxi: boolean;
-  largeFamily: boolean;
-}
-
-interface ISVResult {
-  value: number | null;
-  isExempt: boolean;
-  breakdown?: {
-    ccComponent: number;
-    co2Component: number;
-    depreciationFactor: number;
-    fuelFactor: number;
-    cycleFactor: number;
-    categoryFactor: number;
-    originFactor: number;
-    reductionsFactor: number;
-  };
-}
-
-function depreciationFactor(year: number) {
-  const age = Math.max(0, 2026 - year);
-  if (age <= 1) return 0.9;
-  if (age <= 2) return 0.8;
-  if (age <= 3) return 0.72;
-  if (age <= 4) return 0.65;
-  if (age <= 5) return 0.57;
-  if (age <= 6) return 0.48;
-  if (age <= 7) return 0.4;
-  if (age <= 8) return 0.35;
-  if (age <= 9) return 0.3;
-  if (age <= 10) return 0.25;
-  return 0.2;
-}
-
-function calcISVValue(form: FormState): ISVResult {
-  const year = parseInt(form.year);
-  const cc = parseInt(form.cc);
-  const co2 = parseInt(form.co2);
-
-  if (!cc || !co2 || !year) return { value: null, isExempt: false };
-  if (form.fuel === "eletrico" || form.transferResidence) return { value: null, isExempt: true };
-
-  const depreciation = depreciationFactor(year);
-
-  const ccBase =
-    cc <= 1000 ? 750 :
-    cc <= 1300 ? 1900 :
-    cc <= 1600 ? 3100 :
-    cc <= 2000 ? 5200 :
-    cc <= 2500 ? 9500 : 14000;
-
-  const co2Tax =
-    co2 <= 95  ? 0 :
-    co2 <= 115 ? co2 * 8 :
-    co2 <= 145 ? co2 * 22 :
-    co2 <= 175 ? co2 * 45 :
-    co2 * 85;
-
-  const fuelMult = form.fuel === "hibrido"
-    ? (form.hybridKind === "phev" ? 0.25 : form.hybridKind === "mhev" ? 0.6 : 0.4)
-    : form.fuel === "gasolina" ? 1.05 : 1;
-  const cycleMult = form.cycle === "WLTP" ? 1.06 : 1;
-  const categoryMult = form.category === "N1" ? 0.7 : 1;
-  const originMult = form.origin === "noneu" ? 1.23 : 1;
-  const reductionsMult =
-    (form.disability ? 0.5 : 1) *
-    (form.taxi ? 0.3 : 1) *
-    (form.largeFamily ? 0.8 : 1);
-
-  const base = ccBase + co2Tax;
-  const totalRaw = base * depreciation * fuelMult * cycleMult * categoryMult * originMult * reductionsMult;
-  const total = Math.max(0, Math.round(totalRaw / 10) * 10);
-  return {
-    value: total,
-    isExempt: false,
-    breakdown: {
-      ccComponent: Math.round(ccBase),
-      co2Component: Math.round(co2Tax),
-      depreciationFactor: depreciation,
-      fuelFactor: fuelMult,
-      cycleFactor: cycleMult,
-      categoryFactor: categoryMult,
-      originFactor: originMult,
-      reductionsFactor: reductionsMult,
-    },
-  };
-}
+// Initial form state
+const INITIAL_FORM: IsvInput = {
+  fuel: "diesel",
+  condition: "usado",
+  year: new Date().getFullYear(),
+  month: 1,
+  cc: 0,
+  co2: 0,
+  particles: 0,
+  origin: "eu",
+  category: "M1",
+  cycle: "WLTP",
+  hybridKind: "hev",
+  electricRange: 0,
+  transferResidence: false,
+  disability: false,
+  taxi: false,
+  largeFamily: false,
+};
 
 export default function IsvSimulator() {
-  const [form, setForm] = useState<FormState>({
-    fuel: "diesel",
-    year: "",
-    cc: "",
-    co2: "",
-    origin: "eu",
-    category: "M1",
-    cycle: "WLTP",
-    hybridKind: "hev",
-    euro: "Euro 6",
-    transferResidence: false,
-    disability: false,
-    taxi: false,
-    largeFamily: false,
-  });
-  const [result, setResult] = useState<ISVResult | null>(null);
+  const [form, setForm] = useState<IsvInput>(INITIAL_FORM);
+  const [result, setResult] = useState<IsvBreakdown | null>(null);
   const [error, setError] = useState("");
 
   const handleChange =
-    (field: keyof FormState) =>
+    (field: keyof IsvInput) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const value =
         e.target instanceof HTMLInputElement && e.target.type === "checkbox"
           ? e.target.checked
+          : e.target.type === "number" || field === "year" || field === "month" || field === "cc" || field === "co2" || field === "particles" || field === "electricRange"
+          ? Number(e.target.value)
           : e.target.value;
-      setForm((prev) => ({ ...prev, [field]: value as any }));
+      
+      setForm((prev) => ({ ...prev, [field]: value }));
       setResult(null);
       setError("");
     };
 
   const handleCalculate = () => {
+    // Basic validation
     if (!form.cc || !form.co2 || !form.year) {
-      setError("Por favor preencha todos os campos.");
+      setError("Por favor preencha os campos obrigatórios (Ano, Cilindrada, CO2).");
       return;
     }
-    setError("");
-    setResult(calcISVValue(form));
+    if (form.year < 1900 || form.year > new Date().getFullYear() + 1) {
+        setError("Ano inválido.");
+        return;
+    }
+
+    try {
+      const res = calculateIsv(form);
+      setResult(res);
+      setError("");
+    } catch (err) {
+      console.error(err);
+      setError("Ocorreu um erro ao calcular o ISV. Verifique os dados inseridos.");
+    }
   };
 
   const inputClass =
     "w-full h-[50px] rounded-xl border-[1.5px] border-[var(--border)] px-3.5 text-navy font-body text-[0.95rem] bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/12 transition-all";
 
   const showHybridKind = form.fuel === "hibrido";
-  const isExemptAll = form.fuel === "eletrico" || form.transferResidence;
+  const showParticles = form.fuel === "diesel";
+  const showElectricRange = form.fuel === "hibrido" && form.hybridKind === "phev";
+
+  // Helper to format currency
+  const formatCurrency = (val: number) =>
+    new Intl.NumberFormat("pt-PT", {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0,
+    }).format(val);
 
   return (
     <section className="py-24 px-6 bg-[var(--bg)]" id="isv">
@@ -167,12 +91,24 @@ export default function IsvSimulator() {
             Simulador de ISV
           </h2>
           <p className="text-muted mt-2">
-            Calcule o imposto estimado para a sua importação
+            Calcule o imposto estimado para a sua importação (Regras 2025/2026)
           </p>
         </div>
 
         <div className="bg-white rounded-3xl p-10 border border-[var(--border)] shadow-[0_4px_32px_rgba(7,17,43,0.07)]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* Condition */}
+            <div className="flex flex-col gap-2">
+              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
+                Estado do Veículo
+              </label>
+              <select className={inputClass} value={form.condition} onChange={handleChange("condition")}>
+                <option value="usado">Usado (Importado)</option>
+                <option value="novo">Novo (0 km)</option>
+              </select>
+            </div>
+
+            {/* Fuel */}
             <div className="flex flex-col gap-2">
               <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
                 Tipo de Combustível
@@ -182,22 +118,41 @@ export default function IsvSimulator() {
                 <option value="gasolina">Gasolina</option>
                 <option value="hibrido">Híbrido</option>
                 <option value="eletrico">Elétrico</option>
+                <option value="gpl">GPL/Gás Natural</option>
               </select>
             </div>
 
+            {/* Hybrid Kind */}
             {showHybridKind && (
               <div className="flex flex-col gap-2">
                 <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
                   Tipo de Híbrido
                 </label>
                 <select className={inputClass} value={form.hybridKind} onChange={handleChange("hybridKind")}>
-                  <option value="mhev">MHEV</option>
-                  <option value="hev">HEV</option>
-                  <option value="phev">PHEV</option>
+                  <option value="hev">HEV (Híbrido Convencional)</option>
+                  <option value="mhev">MHEV (Mild Hybrid)</option>
+                  <option value="phev">PHEV (Plug-in)</option>
                 </select>
               </div>
             )}
 
+             {/* Electric Range (for PHEV) */}
+             {showElectricRange && (
+              <div className="flex flex-col gap-2">
+                <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
+                  Autonomia Elétrica (km)
+                </label>
+                <input
+                  className={inputClass}
+                  type="number"
+                  placeholder="Ex: 55"
+                  value={form.electricRange || ""}
+                  onChange={handleChange("electricRange")}
+                />
+              </div>
+            )}
+
+            {/* Year & Month */}
             <div className="flex flex-col gap-2">
               <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
                 Ano da Matrícula
@@ -206,13 +161,24 @@ export default function IsvSimulator() {
                 className={inputClass}
                 type="number"
                 placeholder="Ex: 2021"
-                min={1990}
-                max={2025}
-                value={form.year}
+                min={1980}
+                max={new Date().getFullYear()}
+                value={form.year || ""}
                 onChange={handleChange("year")}
               />
             </div>
+             <div className="flex flex-col gap-2">
+              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
+                Mês da Matrícula
+              </label>
+              <select className={inputClass} value={form.month} onChange={handleChange("month")}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
 
+            {/* CC */}
             <div className="flex flex-col gap-2">
               <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
                 Cilindrada (cm³)
@@ -221,11 +187,12 @@ export default function IsvSimulator() {
                 className={inputClass}
                 type="number"
                 placeholder="Ex: 1995"
-                value={form.cc}
+                value={form.cc || ""}
                 onChange={handleChange("cc")}
               />
             </div>
 
+            {/* CO2 */}
             <div className="flex flex-col gap-2">
               <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
                 Emissões CO₂ (g/km)
@@ -234,120 +201,142 @@ export default function IsvSimulator() {
                 className={inputClass}
                 type="number"
                 placeholder="Ex: 120"
-                value={form.co2}
+                value={form.co2 || ""}
                 onChange={handleChange("co2")}
               />
             </div>
 
+             {/* Particles (Diesel) */}
+             {showParticles && (
+              <div className="flex flex-col gap-2">
+                <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
+                  Partículas (g/km)
+                </label>
+                <input
+                  className={inputClass}
+                  type="number"
+                  step="0.0001"
+                  placeholder="Ex: 0.0005"
+                  value={form.particles !== undefined ? form.particles : ""}
+                  onChange={handleChange("particles")}
+                />
+                 <p className="text-[10px] text-gray-400 mt-1">Se desconhecido, deixe em branco (será assumido &gt; 0.001 se carro antigo)</p>
+              </div>
+            )}
+
+            {/* Origin */}
             <div className="flex flex-col gap-2">
               <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
                 País de Origem
               </label>
               <select className={inputClass} value={form.origin} onChange={handleChange("origin")}>
-                <option value="eu">União Europeia</option>
-                <option value="noneu">Fora da UE</option>
+                <option value="eu">União Europeia (Com Desconto Idade)</option>
+                <option value="noneu">Fora da UE (Sem Desconto Idade)</option>
               </select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                Categoria
-              </label>
-              <select className={inputClass} value={form.category} onChange={handleChange("category")}>
-                <option value="M1">M1 (ligeiro passageiros)</option>
-                <option value="N1">N1 (ligeiro mercadorias)</option>
-              </select>
-            </div>
-
+            {/* Cycle */}
             <div className="flex flex-col gap-2">
               <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
                 Ciclo de Medição CO₂
               </label>
               <select className={inputClass} value={form.cycle} onChange={handleChange("cycle")}>
-                <option value="WLTP">WLTP</option>
-                <option value="NEDC">NEDC</option>
+                <option value="WLTP">WLTP (Normalmente após 2018)</option>
+                <option value="NEDC">NEDC (Antigo)</option>
               </select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                Norma Euro
-              </label>
-              <select className={inputClass} value={form.euro} onChange={handleChange("euro")}>
-                <option>Euro 4</option>
-                <option>Euro 5</option>
-                <option>Euro 6</option>
-                <option>Euro 6d</option>
-              </select>
+            {/* Checkboxes */}
+            <div className="flex items-center gap-3 lg:col-span-3 mt-4">
+                <div className="flex items-center gap-2">
+                    <input id="transferResidence" type="checkbox" checked={form.transferResidence} onChange={handleChange("transferResidence")} className="h-5 w-5 rounded border-[var(--border)]" />
+                    <label htmlFor="transferResidence" className="text-sm text-navy">Mudança de residência (Isento)</label>
+                </div>
             </div>
+             {/* 
+                Disabling special reductions for now as they require complex validation logic not fully implemented.
+                User can see "Isento" if Transfer Residence is checked.
+             */}
+          </div>
 
-            <div className="flex items-center gap-3">
-              <input id="transferResidence" type="checkbox" checked={form.transferResidence} onChange={handleChange("transferResidence")} className="h-5 w-5 rounded border-[var(--border)]" />
-              <label htmlFor="transferResidence" className="text-sm text-navy">Mudança de residência (isento)</label>
-            </div>
-            <div className="flex items-center gap-3">
-              <input id="disability" type="checkbox" checked={form.disability} onChange={handleChange("disability")} className="h-5 w-5 rounded border-[var(--border)]" />
-              <label htmlFor="disability" className="text-sm text-navy">Deficiência motora</label>
-            </div>
-            <div className="flex items-center gap-3">
-              <input id="taxi" type="checkbox" checked={form.taxi} onChange={handleChange("taxi")} className="h-5 w-5 rounded border-[var(--border)]" />
-              <label htmlFor="taxi" className="text-sm text-navy">Táxi</label>
-            </div>
-            <div className="flex items-center gap-3">
-              <input id="largeFamily" type="checkbox" checked={form.largeFamily} onChange={handleChange("largeFamily")} className="h-5 w-5 rounded border-[var(--border)]" />
-              <label htmlFor="largeFamily" className="text-sm text-navy">Família numerosa</label>
-            </div>
-
-            <div className="flex items-end justify-center md:col-span-2 lg:col-span-3">
-              <button
-                onClick={handleCalculate}
-                className="w-full md:w-auto px-8 h-[50px] bg-navy hover:bg-primary text-white rounded-xl font-display font-bold text-[0.95rem] flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25"
-              >
-                <span className="material-symbols-outlined text-xl">calculate</span>
-                Calcular ISV
-              </button>
-            </div>
+          <div className="mt-8 flex items-center justify-center">
+            <button
+              onClick={handleCalculate}
+              className="w-full md:w-auto px-8 h-[50px] bg-navy hover:bg-primary text-white rounded-xl font-display font-bold text-[0.95rem] flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25"
+            >
+              <span className="material-symbols-outlined text-xl">calculate</span>
+              Calcular ISV
+            </button>
           </div>
 
           {error && (
-            <p className="mt-4 text-red-500 text-sm font-medium">{error}</p>
+            <p className="mt-4 text-red-500 text-sm font-medium text-center">{error}</p>
           )}
 
           {result && (
-            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-navy to-[#1a2f5e]">
-                <p className="text-white/60 text-xs font-bold uppercase tracking-widest">
-                  ISV Estimado
+            <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {/* Total Card */}
+              <div className="p-8 rounded-2xl bg-gradient-to-br from-navy to-[#1a2f5e] text-white flex flex-col justify-center">
+                <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">
+                  Total a Pagar
                 </p>
-                <p className="font-display font-extrabold text-white text-[2.2rem] mt-1">
+                <p className="font-display font-extrabold text-[2.5rem] leading-none">
                   {result.isExempt
                     ? "Isento"
-                    : result.value !== null
-                    ? new Intl.NumberFormat("pt-PT", {
-                        style: "currency",
-                        currency: "EUR",
-                        maximumFractionDigits: 0,
-                      }).format(result.value)
-                    : "—"}
+                    : formatCurrency(result.finalTotal)}
                 </p>
-                <p className="text-white/40 text-xs mt-2">
-                  * Estimativa indicativa. Valor final sujeito a avaliação oficial pela AT.
-                </p>
+                {result.isExempt && result.exemptReason && (
+                    <p className="text-white/80 text-sm mt-2">{result.exemptReason}</p>
+                )}
+                 {!result.isExempt && (
+                     <div className="mt-4 space-y-1">
+                        <p className="text-white/40 text-xs">
+                        Versão: {result.version}
+                        </p>
+                        <p className="text-white/40 text-xs">
+                        * Valor indicativo. Confirmar sempre junto da AT.
+                        </p>
+                     </div>
+                 )}
               </div>
-              {!result.isExempt && result.breakdown && (
+
+              {/* Breakdown Card */}
+              {!result.isExempt && (
                 <div className="p-6 rounded-2xl bg-white border border-[var(--border)]">
-                  <p className="text-muted text-xs font-bold uppercase tracking-widest">
-                    Detalhe de Cálculo
+                  <p className="text-muted text-xs font-bold uppercase tracking-widest mb-4">
+                    Detalhe do Cálculo
                   </p>
-                  <ul className="mt-3 text-sm text-navy space-y-1.5">
-                    <li>Componente cilindrada: {new Intl.NumberFormat("pt-PT").format(result.breakdown.ccComponent)} €</li>
-                    <li>Componente CO₂: {new Intl.NumberFormat("pt-PT").format(result.breakdown.co2Component)} €</li>
-                    <li>Fator depreciação: ×{result.breakdown.depreciationFactor.toFixed(2)}</li>
-                    <li>Fator combustível: ×{result.breakdown.fuelFactor.toFixed(2)}</li>
-                    <li>Fator ciclo CO₂: ×{result.breakdown.cycleFactor.toFixed(2)}</li>
-                    <li>Fator categoria: ×{result.breakdown.categoryFactor.toFixed(2)}</li>
-                    <li>Fator origem: ×{result.breakdown.originFactor.toFixed(2)}</li>
-                    <li>Reduções: ×{result.breakdown.reductionsFactor.toFixed(2)}</li>
+                  <ul className="space-y-3 text-sm text-navy">
+                    <li className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <span>Componente Cilindrada</span>
+                        <span className="font-semibold">{formatCurrency(result.cc.subtotal)}</span>
+                    </li>
+                    <li className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <span>Componente Ambiental (CO₂)</span>
+                        <span className="font-semibold">{formatCurrency(result.co2.subtotal)}</span>
+                    </li>
+                    {result.dieselSurcharge > 0 && (
+                        <li className="flex justify-between items-center border-b border-gray-100 pb-2 text-red-600">
+                            <span>Agravamento Diesel</span>
+                            <span className="font-semibold">+{formatCurrency(result.dieselSurcharge)}</span>
+                        </li>
+                    )}
+                     <li className="flex justify-between items-center border-b border-gray-100 pb-2 bg-gray-50 p-2 rounded">
+                        <span className="font-bold">Total Bruto</span>
+                        <span className="font-bold">{formatCurrency(result.totalBeforeReductions + result.dieselSurcharge)}</span>
+                    </li>
+                    {result.ageReduction.amount > 0 && (
+                         <li className="flex justify-between items-center text-green-600">
+                            <span>Redução Idade ({result.ageReduction.percent}%)</span>
+                            <span className="font-semibold">-{formatCurrency(result.ageReduction.amount)}</span>
+                        </li>
+                    )}
+                    {result.hybridReduction.amount > 0 && (
+                         <li className="flex justify-between items-center text-green-600">
+                            <span>Benefício Híbrido ({result.hybridReduction.percent}%)</span>
+                            <span className="font-semibold">-{formatCurrency(result.hybridReduction.amount)}</span>
+                        </li>
+                    )}
                   </ul>
                 </div>
               )}
