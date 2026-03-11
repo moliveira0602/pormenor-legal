@@ -13,7 +13,7 @@ const navLinks = [
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/92 backdrop-blur-md border-b border-[var(--border)]">
-      <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between h-[72px]">
+      <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between h-[72px]" suppressHydrationWarning>
         <Link href="/" className="flex items-center gap-3 no-underline">
           <Logo className="h-13 w-auto" width={164} height={31} />
         </Link>

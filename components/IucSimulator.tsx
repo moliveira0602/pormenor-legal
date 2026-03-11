@@ -11,6 +11,8 @@ const INITIAL_FORM: IucInput = {
   month: 1,
   day: 1,
   cc: 0,
+  co2: 0,
+  co2Standard: "NEDC",
   origin: "national",
 };
 
@@ -37,7 +39,7 @@ export default function IucSimulator() {
       const value =
         e.target instanceof HTMLInputElement && e.target.type === "checkbox"
           ? e.target.checked
-          : e.target.type === "number" || field === "year" || field === "month" || field === "cc"
+          : e.target.type === "number" || field === "year" || field === "month" || field === "cc" || field === "co2"
           ? Number(e.target.value)
           : e.target.value;
       
@@ -57,13 +59,29 @@ export default function IucSimulator() {
         return;
     }
 
+    // Validate CO2 for Category B (matriculated after 2007-07-01)
+    const registrationDate = new Date(form.year, form.month - 1, form.day);
+    const thresholdDate = new Date(2007, 6, 1);
+    const isCategoryB = registrationDate >= thresholdDate;
+    
+    if (isCategoryB && (!form.co2 || form.co2 <= 0)) {
+      setError("CO2 obrigatório para veículos matriculados após 01/07/2007.");
+      return;
+    }
+
+    // Validate category (only M1 supported)
+    if (form.category !== "M1") {
+      setError("Este simulador é apenas para veículos M1 (ligeiros de passageiros).");
+      return;
+    }
+
     try {
       const res = calculateIuc(form);
       setResult(res);
       setError("");
     } catch (err) {
       console.error(err);
-      setError("Ocorreu um erro ao calcular o IUC. Verifique os dados inseridos.");
+      setError(err instanceof Error ? err.message : "Ocorreu um erro ao calcular o IUC. Verifique os dados inseridos.");
     }
   };
 
@@ -75,7 +93,7 @@ export default function IucSimulator() {
     new Intl.NumberFormat("pt-PT", {
       style: "currency",
       currency: "EUR",
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 2,
     }).format(val);
 
   return (
@@ -137,6 +155,20 @@ export default function IucSimulator() {
               />
             </div>
 
+            {/* CO2 */}
+            <div className="flex flex-col gap-2">
+              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
+                Emissões CO2 (g/km)
+              </label>
+              <input
+                className={inputClass}
+                type="number"
+                placeholder="Ex: 120"
+                value={form.co2 || ""}
+                onChange={handleChange("co2")}
+              />
+            </div>
+
             {/* Origin */}
             <div className="flex flex-col gap-2">
               <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
@@ -180,7 +212,7 @@ export default function IucSimulator() {
                 <p className="font-display font-extrabold text-[2.5rem] leading-none">
                   {result.isExempt
                     ? "Isento"
-                    : formatCurrency(result.finalTotal)}
+                    : formatCurrency(result.total)}
                 </p>
                 {result.isExempt && result.exemptReason && (
                     <p className="text-white/80 text-sm mt-2">{result.exemptReason}</p>
@@ -205,21 +237,29 @@ export default function IucSimulator() {
                   </p>
                   <ul className="space-y-3 text-sm text-navy">
                     <li className="flex justify-between items-center border-b border-gray-100 pb-2">
-                        <span>Base de Cálculo</span>
-                        <span className="font-semibold">{formatCurrency(result.baseAmount)}</span>
+                        <span>Componente Motor</span>
+                        <span className="font-semibold">{formatCurrency(result.engineComponent)}</span>
                     </li>
-                    {result.ageReduction.amount > 0 && (
-                         <li className="flex justify-between items-center text-green-600">
-                            <span>Redução por Idade ({result.ageReduction.percent}%)</span>
-                            <span className="font-semibold">-{formatCurrency(result.ageReduction.amount)}</span>
+                    {result.co2Component > 0 && (
+                         <li className="flex justify-between items-center border-b border-gray-100 pb-2">
+                            <span>Componente CO2</span>
+                            <span className="font-semibold">{formatCurrency(result.co2Component)}</span>
                         </li>
                     )}
-                    {result.electricDiscount.amount > 0 && (
-                         <li className="flex justify-between items-center text-green-600">
-                            <span>Desconto Veículo Elétrico ({result.electricDiscount.percent}%)</span>
-                            <span className="font-semibold">-{formatCurrency(result.electricDiscount.amount)}</span>
+                    {result.dieselExtra > 0 && (
+                         <li className="flex justify-between items-center border-b border-gray-100 pb-2 text-red-600">
+                            <span>Agravamento Diesel</span>
+                            <span className="font-semibold">+{formatCurrency(result.dieselExtra)}</span>
                         </li>
                     )}
+                    <li className="flex justify-between items-center border-b border-gray-100 pb-2">
+                        <span>Subtotal</span>
+                        <span className="font-semibold">{formatCurrency(result.subtotal)}</span>
+                    </li>
+                    <li className="flex justify-between items-center">
+                        <span>Total</span>
+                        <span className="font-semibold">{formatCurrency(result.total)}</span>
+                    </li>
                   </ul>
                 </div>
               )}

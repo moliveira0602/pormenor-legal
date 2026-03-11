@@ -92,6 +92,27 @@ export const IUC_TABLES_2025 = {
       gpl: 1.8,
     },
   },
+  // CO2 rates per category and fuel type (EUR per 1000g/km)
+  co2Rates: {
+    M1: {
+      gasolina: 0.05, // EUR per 1000g/km
+      diesel: 0.10,
+      hibrido: 0.03,
+      eletrico: 0.0, // Isento
+      gpl: 0.04,
+    },
+    N1: {
+      gasolina: 0.06,
+      diesel: 0.12,
+      hibrido: 0.04,
+      eletrico: 0.0,
+      gpl: 0.05,
+    },
+  },
+  // Diesel surcharge
+  dieselSurcharge: {
+    amount: 500, // EUR
+  },
   // Age reduction table for IUC
   ageReduction: [
     { minYears: 0, maxYears: 1, percent: 0 },
@@ -105,5 +126,47 @@ export const IUC_TABLES_2025 = {
   // Electric vehicle discount
   electricDiscount: {
     percent: 100, // 100% discount for electric vehicles
+  },
+  // IUC Category A tables (for vehicles matriculated before 2007-07-01)
+  categoryA: {
+    // Base rates per cilindrada range (EUR)
+    baseRates: [
+      { minCc: 0, maxCc: 1000, rate: 39.95 },
+      { minCc: 1001, maxCc: 1500, rate: 39.95 },
+      { minCc: 1501, maxCc: 2000, rate: 39.95 },
+      { minCc: 2001, maxCc: 2500, rate: 47.94 },
+      { minCc: 2501, maxCc: 3000, rate: 55.93 },
+      { minCc: 3001, maxCc: Infinity, rate: 63.92 },
+    ],
+    // Diesel surcharge per cilindrada range (EUR)
+    dieselSurcharge: [
+      { minCc: 0, maxCc: 1000, surcharge: 6.31 },
+      { minCc: 1001, maxCc: 1500, surcharge: 6.31 },
+      { minCc: 1501, maxCc: 2000, surcharge: 6.31 },
+      { minCc: 2001, maxCc: 2500, surcharge: 7.57 },
+      { minCc: 2501, maxCc: 3000, surcharge: 8.83 },
+      { minCc: 3001, maxCc: Infinity, surcharge: 10.09 },
+    ],
+  },
+  // IUC Category B tables (for vehicles matriculated after 2007-07-01)
+  categoryB: {
+    // Base rates per cilindrada range (EUR)
+    baseRates: [
+      { minCc: 0, maxCc: 1000, rate: 39.95 },
+      { minCc: 1001, maxCc: 1500, rate: 39.95 },
+      { minCc: 1501, maxCc: 2000, rate: 39.95 },
+      { minCc: 2001, maxCc: 2500, rate: 47.94 },
+      { minCc: 2501, maxCc: 3000, rate: 55.93 },
+      { minCc: 3001, maxCc: Infinity, rate: 63.92 },
+    ],
+    // CO2 rates per emission range (EUR)
+    co2Rates: [
+      { minCo2: 0, maxCo2: 100, rate: 10.00 },
+      { minCo2: 101, maxCo2: 150, rate: 15.00 },
+      { minCo2: 151, maxCo2: 200, rate: 25.00 },
+      { minCo2: 201, maxCo2: 250, rate: 40.00 },
+      { minCo2: 251, maxCo2: 300, rate: 60.00 },
+      { minCo2: 301, maxCo2: Infinity, rate: 80.00 },
+    ],
   },
 };

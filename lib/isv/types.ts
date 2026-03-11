@@ -95,21 +95,18 @@ export interface IucInput {
   month: number;
   day: number;
   cc: number;
+  co2: number;
+  co2Standard: "NEDC" | "WLTP";
   origin: "national" | "foreign";
 }
 
 export interface IucBreakdown {
-  baseAmount: number;
-  ageReduction: {
-    years: number;
-    percent: number;
-    amount: number;
-  };
-  electricDiscount: {
-    percent: number;
-    amount: number;
-  };
-  finalTotal: number;
+  category: VehicleCategory;
+  engineComponent: number;
+  co2Component: number;
+  dieselExtra: number;
+  subtotal: number;
+  total: number;
   isExempt: boolean;
   exemptReason?: string;
   version: string;
