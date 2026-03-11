@@ -24,7 +24,11 @@ const INITIAL_FORM: IsvInput = {
   largeFamily: false,
 };
 
-export default function IsvSimulator() {
+interface IsvSimulatorProps {
+  title?: string;
+}
+
+export default function IsvSimulator({ title = "Simulador de ISV" }: IsvSimulatorProps) {
   const [form, setForm] = useState<IsvInput>(INITIAL_FORM);
   const [result, setResult] = useState<IsvBreakdown | null>(null);
   const [error, setError] = useState("");
@@ -95,19 +99,6 @@ export default function IsvSimulator() {
   return (
     <section className="py-24 px-6 bg-[var(--bg)]" id="isv">
       <div className="max-w-[900px] mx-auto">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-1.5 text-primary text-xs font-bold uppercase tracking-widest mb-3">
-            <span className="w-5 h-0.5 bg-primary inline-block" />
-            Ferramenta Gratuita
-          </div>
-          <h2 className="font-display font-extrabold text-navy text-[2.2rem] tracking-tight">
-            Simulador de ISV
-          </h2>
-          <p className="text-muted mt-2">
-            Calcule o imposto estimado para a sua importação (Regras 2025/2026). <br/>
-            <span className="text-xs text-gray-400">Nota: O simulador assume a aplicação das tabelas mais recentes (OE2025).</span>
-          </p>
-        </div>
 
         <div className="bg-white rounded-3xl p-10 border border-[var(--border)] shadow-[0_4px_32px_rgba(7,17,43,0.07)]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

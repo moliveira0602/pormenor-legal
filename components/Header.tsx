@@ -32,10 +32,10 @@ export default function Header() {
         </nav>
 
         <a
-          href="#isv"
+          href="#simulador"
           className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-[10px] font-display font-bold text-sm transition-all shadow-lg shadow-primary/25 hover:-translate-y-px no-underline"
         >
-          Simule o ISV
+          Simule agora
         </a>
       </div>
     </header>

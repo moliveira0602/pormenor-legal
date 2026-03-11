@@ -87,3 +87,30 @@ export interface IsvTables {
     amount: number;
   };
 }
+
+export interface IucInput {
+  category: VehicleCategory;
+  fuel: FuelType;
+  year: number;
+  month: number;
+  day: number;
+  cc: number;
+  origin: "national" | "foreign";
+}
+
+export interface IucBreakdown {
+  baseAmount: number;
+  ageReduction: {
+    years: number;
+    percent: number;
+    amount: number;
+  };
+  electricDiscount: {
+    percent: number;
+    amount: number;
+  };
+  finalTotal: number;
+  isExempt: boolean;
+  exemptReason?: string;
+  version: string;
+}

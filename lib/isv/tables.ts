@@ -72,3 +72,38 @@ export const TABLES_2025: IsvTables = {
     amount: 500, // EUR
   },
 };
+
+// IUC Tables for 2025
+export const IUC_TABLES_2025 = {
+  // Base rates per category and fuel type (EUR per 1000cc)
+  baseRates: {
+    M1: {
+      gasolina: 1.5, // EUR per 1000cc
+      diesel: 2.0,
+      hibrido: 1.0,
+      eletrico: 0.0, // Isento
+      gpl: 1.2,
+    },
+    N1: {
+      gasolina: 2.0,
+      diesel: 2.5,
+      hibrido: 1.5,
+      eletrico: 0.0,
+      gpl: 1.8,
+    },
+  },
+  // Age reduction table for IUC
+  ageReduction: [
+    { minYears: 0, maxYears: 1, percent: 0 },
+    { minYears: 1, maxYears: 5, percent: 0 },
+    { minYears: 5, maxYears: 10, percent: 0 },
+    { minYears: 10, maxYears: 15, percent: 0 },
+    { minYears: 15, maxYears: 20, percent: 0 },
+    { minYears: 20, maxYears: 25, percent: 0 },
+    { minYears: 25, maxYears: Infinity, percent: 100 }, // Isenção total > 25 anos
+  ],
+  // Electric vehicle discount
+  electricDiscount: {
+    percent: 100, // 100% discount for electric vehicles
+  },
+};

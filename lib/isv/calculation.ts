@@ -1,5 +1,5 @@
-import { TABLES_2025 } from "./tables";
-import { IsvBreakdown, IsvInput, IsvTableEntry } from "./types";
+import { TABLES_2025, IUC_TABLES_2025 } from "./tables";
+import { IsvBreakdown, IsvInput, IsvTableEntry, IucBreakdown, IucInput } from "./types";
 
 function getTableEntry(table: IsvTableEntry[], value: number): IsvTableEntry {
   for (const entry of table) {
@@ -195,6 +195,77 @@ function createExemptResult(reason: string, version: string): IsvBreakdown {
     hybridReduction: { percent: 0, amount: 0 },
     specialReductions: { percent: 0, amount: 0 },
     totalBeforeReductions: 0,
+    finalTotal: 0,
+    isExempt: true,
+    exemptReason: reason,
+    version,
+  };
+}
+
+export function calculateIuc(input: IucInput): IucBreakdown {
+  const tables = IUC_TABLES_2025;
+  const version = "Tabelas 2025 (OE2025)";
+
+  // 1. Initial Checks for Exemptions
+  if (input.fuel === "eletrico") {
+    return createIucExemptResult("Veículo 100% Elétrico", version);
+  }
+
+  // 2. Calculate Base Amount
+  const baseRate = tables.baseRates[input.category][input.fuel];
+  const baseAmount = (input.cc / 1000) * baseRate;
+
+  // 3. Calculate Age
+  const ageYears = calculateAge(input.year, input.month, input.day);
+  
+  // 4. Age Reduction
+  let ageReductionPercent = 0;
+  const ageBracket = tables.ageReduction.find(
+    (r) => ageYears > r.minYears && ageYears <= r.maxYears
+  );
+  if (ageBracket) {
+    ageReductionPercent = ageBracket.percent;
+  }
+  const ageReductionAmount = baseAmount * (ageReductionPercent / 100);
+
+  // 5. Electric Discount (for hybrid and other eligible vehicles)
+  let electricDiscountPercent = 0;
+  let electricDiscountAmount = 0;
+  
+  // Apply electric discount if applicable (for now, only for electric vehicles which are already exempt)
+  // This can be extended for other eligible vehicles in the future
+
+  // 6. Calculate Final Total
+  let finalTotal = baseAmount - ageReductionAmount - electricDiscountAmount;
+  finalTotal = Math.max(0, finalTotal);
+
+  // Check for exemption based on age
+  if (ageReductionPercent === 100) {
+    return createIucExemptResult("Veículo com mais de 25 anos", version);
+  }
+
+  return {
+    baseAmount,
+    ageReduction: {
+      years: ageYears,
+      percent: ageReductionPercent,
+      amount: ageReductionAmount,
+    },
+    electricDiscount: {
+      percent: electricDiscountPercent,
+      amount: electricDiscountAmount,
+    },
+    finalTotal,
+    isExempt: false,
+    version,
+  };
+}
+
+function createIucExemptResult(reason: string, version: string): IucBreakdown {
+  return {
+    baseAmount: 0,
+    ageReduction: { years: 0, percent: 0, amount: 0 },
+    electricDiscount: { percent: 0, amount: 0 },
     finalTotal: 0,
     isExempt: true,
     exemptReason: reason,
