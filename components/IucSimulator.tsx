@@ -21,6 +21,7 @@ export default function IucSimulator() {
   const [result, setResult] = useState<IucBreakdown | null>(null);
   const [error, setError] = useState("");
   const [dateStr, setDateStr] = useState(`${new Date().getFullYear()}-01-01`); // Initial date
+  const [consent, setConsent] = useState(false);
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -86,7 +87,7 @@ export default function IucSimulator() {
   };
 
   const inputClass =
-    "w-full h-[50px] rounded-xl border-[1.5px] border-[var(--border)] px-3.5 text-navy font-body text-[0.95rem] bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/12 transition-all";
+    "w-full h-[46px] rounded-lg border border-[var(--border)] px-4 text-navy font-body text-sm bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/12 transition-all";
 
   // Helper to format currency
   const formatCurrency = (val: number) =>
@@ -98,173 +99,244 @@ export default function IucSimulator() {
 
   return (
     <section className="py-24 px-6 bg-[var(--bg)]" id="iuc">
-      <div className="max-w-[900px] mx-auto">
-
-        <div className="bg-white rounded-3xl p-10 border border-[var(--border)] shadow-[0_4px_32px_rgba(7,17,43,0.07)]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {/* Category */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                Categoria do Veículo
-              </label>
-              <select className={inputClass} value={form.category} onChange={handleChange("category")}>
-                <option value="M1">M1 - Automóvel ligeiro</option>
-                <option value="N1">N1 - Veículo comercial ligeiro</option>
-              </select>
-            </div>
-
-            {/* Fuel */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                Tipo de Combustível
-              </label>
-              <select className={inputClass} value={form.fuel} onChange={handleChange("fuel")}>
-                <option value="diesel">Diesel</option>
-                <option value="gasolina">Gasolina</option>
-                <option value="hibrido">Híbrido</option>
-                <option value="eletrico">Elétrico</option>
-                <option value="gpl">GPL/Gás Natural</option>
-              </select>
-            </div>
-
-            {/* Date */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                Data da Primeira Matrícula
-              </label>
-              <input
-                className={inputClass}
-                type="date"
-                value={dateStr}
-                onChange={handleDateChange}
-                max={new Date().toISOString().split('T')[0]}
-              />
-            </div>
-
-            {/* CC */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                Cilindrada (cm³)
-              </label>
-              <input
-                className={inputClass}
-                type="number"
-                placeholder="Ex: 1995"
-                value={form.cc || ""}
-                onChange={handleChange("cc")}
-              />
-            </div>
-
-            {/* CO2 */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                Emissões CO2 (g/km)
-              </label>
-              <input
-                className={inputClass}
-                type="number"
-                placeholder="Ex: 120"
-                value={form.co2 || ""}
-                onChange={handleChange("co2")}
-              />
-            </div>
-
-            {/* Origin */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                Origem da Matrícula
-              </label>
-              <select className={inputClass} value={form.origin} onChange={handleChange("origin")}>
-                <option value="national">Nacional</option>
-                <option value="foreign">Estrangeira</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="mt-8 flex items-center justify-center">
-            <button
-              onClick={handleCalculate}
-              className="w-full md:w-auto px-8 h-[50px] bg-navy hover:bg-primary text-white rounded-xl font-display font-bold text-[0.95rem] flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25"
-            >
-              <span className="material-symbols-outlined text-xl">calculate</span>
-              Calcular IUC
-            </button>
-          </div>
+      <div className="max-w-[800px] mx-auto">
+        <div className="bg-white rounded-2xl p-8 border border-[var(--border)] shadow-sm">
           
-          <div className="mt-4 text-center">
-            <p className="text-[10px] text-gray-400">
-               * O cálculo não dispensa a consulta das tabelas oficiais da AT. Valores indicativos baseados nas regras em vigor (OE2025). <br/>
-               Para veículos com mais de 25 anos, o IUC pode ser isento.
+          {/* Título e subtítulo */}
+          <div className="text-center mb-8">
+            <h2 className="font-display font-extrabold text-navy text-2xl md:text-3xl mb-2">
+              Simulador de IUC
+            </h2>
+            <p className="text-muted text-sm md:text-base">
+              Calcule o imposto anual estimado para o seu veículo
             </p>
           </div>
 
-          {error && (
-            <p className="mt-4 text-red-500 text-sm font-medium text-center">{error}</p>
-          )}
+          {/* Formulário */}
+          <form onSubmit={(e) => { e.preventDefault(); handleCalculate(); }} className="space-y-6">
+            
+            {/* Ano vigente */}
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-navy uppercase tracking-wider">
+                Ano vigente
+              </label>
+              <select className={inputClass} value={form.year} onChange={handleChange("year")}>
+                <option value="">Selecione o ano</option>
+                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() + i).map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
 
-          {result && (
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* Total Card */}
-              <div className="p-8 rounded-2xl bg-gradient-to-br from-navy to-[#1a2f5e] text-white flex flex-col justify-center">
-                <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">
-                  Total Anual a Pagar
-                </p>
-                <p className="font-display font-extrabold text-[2.5rem] leading-none">
-                  {result.isExempt
-                    ? "Isento"
-                    : formatCurrency(result.total)}
-                </p>
-                {result.isExempt && result.exemptReason && (
-                    <p className="text-white/80 text-sm mt-2">{result.exemptReason}</p>
-                )}
-                 {!result.isExempt && (
-                     <div className="mt-4 space-y-1">
-                        <p className="text-white/40 text-xs">
-                        Versão: {result.version}
-                        </p>
-                        <p className="text-white/40 text-xs">
-                        * Valor indicativo. Confirmar sempre junto da AT.
-                        </p>
-                     </div>
-                 )}
+            {/* País da matrícula */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-navy uppercase tracking-wider">
+                  País da matrícula
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="flex items-center gap-3 p-3 border border-[var(--border)] rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name="origin"
+                      value="national"
+                      checked={form.origin === "national"}
+                      onChange={handleChange("origin")}
+                      className="text-primary focus:ring-primary"
+                    />
+                    <span className="text-sm">Nacional</span>
+                  </label>
+                  <label className="flex items-center gap-3 p-3 border border-[var(--border)] rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name="origin"
+                      value="foreign"
+                      checked={form.origin === "foreign"}
+                      onChange={handleChange("origin")}
+                      className="text-primary focus:ring-primary"
+                    />
+                    <span className="text-sm">Estrangeira</span>
+                  </label>
+                </div>
               </div>
 
-              {/* Breakdown Card */}
-              {!result.isExempt && (
-                <div className="p-6 rounded-2xl bg-white border border-[var(--border)]">
-                  <p className="text-muted text-xs font-bold uppercase tracking-widest mb-4">
-                    Detalhe do Cálculo
-                  </p>
-                  <ul className="space-y-3 text-sm text-navy">
-                    <li className="flex justify-between items-center border-b border-gray-100 pb-2">
+              {/* Data da primeira matrícula */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-navy uppercase tracking-wider">
+                  Data da primeira matrícula
+                </label>
+                <input
+                  className={inputClass}
+                  type="date"
+                  value={dateStr}
+                  onChange={handleDateChange}
+                  max={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            </div>
+
+            {/* Tipo de combustível, Cilindrada e Emissões na mesma linha */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-navy uppercase tracking-wider">
+                  Tipo de combustível
+                </label>
+                <select className={inputClass} value={form.fuel} onChange={handleChange("fuel")}>
+                  <option value="gasolina">Gasolina</option>
+                  <option value="diesel">Diesel</option>
+                  <option value="eletrico">Elétrico</option>
+                  <option value="hibrido">Híbrido</option>
+                  <option value="gpl">GPL/Gás Natural</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-navy uppercase tracking-wider">
+                  Cilindrada (cm³)
+                </label>
+                <input
+                  className={inputClass}
+                  type="number"
+                  placeholder="Ex: 1995"
+                  value={form.cc || ""}
+                  onChange={handleChange("cc")}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-navy uppercase tracking-wider">
+                  Emissões CO2 (g/km)
+                </label>
+                <input
+                  className={inputClass}
+                  type="number"
+                  placeholder="Ex: 120"
+                  value={form.co2 || ""}
+                  onChange={handleChange("co2")}
+                />
+              </div>
+            </div>
+
+            {/* Consentimento */}
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+              <input
+                type="checkbox"
+                id="consent"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                className="mt-1 text-primary focus:ring-primary"
+              />
+              <label htmlFor="consent" className="text-sm text-navy">
+                Declaro que os dados inseridos são verdadeiros e aceito que este cálculo seja apenas indicativo.
+              </label>
+            </div>
+
+            {/* Botão de simulação */}
+            <div className="mt-6 flex items-center justify-center">
+              <button
+                type="submit"
+                disabled={!consent}
+                className={`w-full md:w-auto px-6 h-[46px] rounded-lg font-display font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                  consent 
+                    ? "bg-navy hover:bg-primary text-white" 
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                <span className="material-symbols-outlined text-base">calculate</span>
+                Calcular IUC
+              </button>
+            </div>
+            
+            <div className="mt-4 text-center">
+              <p className="text-xs text-gray-400">
+                * Valores indicativos baseados nas regras em vigor (OE2025)
+              </p>
+            </div>
+
+            {error && (
+              <p className="mt-4 text-red-500 text-sm font-medium text-center">{error}</p>
+            )}
+
+            {/* Área de resultado */}
+            {result && (
+              <div className="mt-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {/* Total Card */}
+                <div className="p-6 rounded-xl bg-gradient-to-r from-navy to-[#1a2f5e] text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-1">
+                        Total Anual a Pagar
+                      </p>
+                      <p className="font-display font-extrabold text-2xl">
+                        {result.isExempt
+                          ? "Isento"
+                          : formatCurrency(result.total)}
+                      </p>
+                      {result.isExempt && result.exemptReason && (
+                          <p className="text-white/80 text-sm mt-1">{result.exemptReason}</p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white/40 text-xs">Versão: {result.version}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Breakdown Card */}
+                {!result.isExempt && (
+                  <div className="p-6 rounded-xl bg-gray-50">
+                    <p className="text-muted text-xs font-bold uppercase tracking-widest mb-4">
+                      Detalhe do Cálculo
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-sm">
                         <span>Componente Motor</span>
                         <span className="font-semibold">{formatCurrency(result.engineComponent)}</span>
-                    </li>
-                    {result.co2Component > 0 && (
-                         <li className="flex justify-between items-center border-b border-gray-100 pb-2">
-                            <span>Componente CO2</span>
-                            <span className="font-semibold">{formatCurrency(result.co2Component)}</span>
-                        </li>
-                    )}
-                    {result.dieselExtra > 0 && (
-                         <li className="flex justify-between items-center border-b border-gray-100 pb-2 text-red-600">
-                            <span>Agravamento Diesel</span>
-                            <span className="font-semibold">+{formatCurrency(result.dieselExtra)}</span>
-                        </li>
-                    )}
-                    <li className="flex justify-between items-center border-b border-gray-100 pb-2">
+                      </div>
+                      {result.co2Component > 0 && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span>Componente CO2</span>
+                          <span className="font-semibold">{formatCurrency(result.co2Component)}</span>
+                        </div>
+                      )}
+                      {result.dieselExtra > 0 && (
+                        <div className="flex justify-between items-center text-sm text-red-600">
+                          <span>Agravamento Diesel</span>
+                          <span className="font-semibold">+{formatCurrency(result.dieselExtra)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center text-sm border-t border-gray-200 pt-3">
                         <span>Subtotal</span>
                         <span className="font-semibold">{formatCurrency(result.subtotal)}</span>
-                    </li>
-                    <li className="flex justify-between items-center">
+                      </div>
+                      <div className="flex justify-between items-center text-sm font-bold border-t border-gray-200 pt-3">
                         <span>Total</span>
-                        <span className="font-semibold">{formatCurrency(result.total)}</span>
-                    </li>
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
+                        <span className="font-bold">{formatCurrency(result.total)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Nova simulação */}
+            {result && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResult(null);
+                    setForm(INITIAL_FORM);
+                    setDateStr(`${new Date().getFullYear()}-01-01`);
+                    setConsent(false);
+                  }}
+                  className="px-6 h-[40px] bg-gray-200 hover:bg-gray-300 text-navy rounded-lg font-display font-bold text-sm transition-all"
+                >
+                  Nova Simulação
+                </button>
+              </div>
+            )}
+          </form>
         </div>
       </div>
     </section>
