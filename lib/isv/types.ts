@@ -5,6 +5,10 @@ export type Cycle = "NEDC" | "WLTP";
 export type HybridKind = "mhev" | "hev" | "phev"; // Mild, Full, Plug-in
 export type VehicleCondition = "novo" | "usado";
 
+// Tipos específicos para IUC 2026
+export type IucCategory = "A" | "B" | "C" | "D" | "E";
+export type VehicleType = "carro" | "moto" | "ciclomotor" | "triciclo" | "quadriciclo" | "mercadorias_ligeiro" | "mercadorias_pesado";
+
 export interface IsvInput {
   fuel: FuelType;
   condition: VehicleCondition;
@@ -89,7 +93,8 @@ export interface IsvTables {
 }
 
 export interface IucInput {
-  category: VehicleCategory;
+  category: IucCategory;
+  vehicleType: VehicleType;
   fuel: FuelType;
   year: number;
   month: number;
@@ -98,10 +103,12 @@ export interface IucInput {
   co2: number;
   co2Standard: "NEDC" | "WLTP";
   origin: "national" | "foreign";
+  registrationDate?: Date;
 }
 
 export interface IucBreakdown {
-  category: VehicleCategory;
+  category: IucCategory;
+  vehicleType: VehicleType;
   engineComponent: number;
   co2Component: number;
   dieselExtra: number;
@@ -110,4 +117,41 @@ export interface IucBreakdown {
   isExempt: boolean;
   exemptReason?: string;
   version: string;
+}
+
+// Estrutura para tabelas IUC por categoria
+export interface IucCategoryTable {
+  baseRates: Array<{
+    minCc: number;
+    maxCc: number;
+    rate: number;
+  }>;
+  co2Rates?: Array<{
+    minCo2: number;
+    maxCo2: number;
+    rate: number;
+  }>;
+  dieselSurcharge?: Array<{
+    minCc: number;
+    maxCc: number;
+    surcharge: number;
+  }>;
+}
+
+export interface IucTables2026 {
+  categories: {
+    A: IucCategoryTable;
+    B: IucCategoryTable;
+    C: IucCategoryTable;
+    D: IucCategoryTable;
+    E: IucCategoryTable;
+  };
+  ageReduction: Array<{
+    minYears: number;
+    maxYears: number;
+    percent: number;
+  }>;
+  electricDiscount: {
+    percent: number;
+  };
 }

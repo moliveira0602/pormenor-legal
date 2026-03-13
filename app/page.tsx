@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import CocTeaser from "@/components/CocTeaser";
 import ContactCTA from "@/components/ContactCTA";
 import SimulatorTabs from "@/components/SimulatorTabs";
+import IucSimulator from "@/components/IucSimulator";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

@@ -1,4 +1,4 @@
-import { TABLES_2025, IUC_TABLES_2025 } from "./tables";
+import { TABLES_2025, IUC_TABLES_2025, IUC_TABLES_2026 } from "./tables";
 import { IsvBreakdown, IsvInput, IsvTableEntry, IucBreakdown, IucInput } from "./types";
 
 function getTableEntry(table: IsvTableEntry[], value: number): IsvTableEntry {
@@ -203,18 +203,19 @@ function createExemptResult(reason: string, version: string): IsvBreakdown {
 }
 
 export function calculateIuc(input: IucInput): IucBreakdown {
-  const tables = IUC_TABLES_2025;
-  const version = "Tabelas 2025 (OE2025)";
+  const tables = IUC_TABLES_2026;
+  const version = "Tabelas 2026 (OE2026)";
 
   // 1. Initial Checks for Exemptions
   if (input.fuel === "eletrico") {
     return createIucExemptResult("Veículo 100% Elétrico", version);
   }
 
-  // 2. Calculate Date Threshold
-  const registrationDate = new Date(input.year, input.month - 1, input.day);
-  const thresholdDate = new Date(2007, 6, 1); // July 1, 2007
-  const isOlderThanThreshold = registrationDate < thresholdDate;
+  // 2. Get category table
+  const categoryTable = tables.categories[input.category];
+  if (!categoryTable) {
+    throw new Error(`Categoria ${input.category} não suportada`);
+  }
 
   let engineComponent = 0;
   let co2Component = 0;
@@ -222,69 +223,47 @@ export function calculateIuc(input: IucInput): IucBreakdown {
   let subtotal = 0;
   let total = 0;
 
-  if (isOlderThanThreshold) {
-    // Use Category A (cilindrada) table with specific rates
-    const categoryARates = tables.categoryA.baseRates.find(
-      r => input.cc >= r.minCc && input.cc <= r.maxCc
-    );
-    if (!categoryARates) {
-      throw new Error("Cilindrada fora dos limites da tabela Categoria A");
-    }
-    engineComponent = categoryARates.rate;
-    subtotal = engineComponent;
+  // 3. Calculate engine component based on cilindrada
+  const engineRate = categoryTable.baseRates.find(
+    r => input.cc >= r.minCc && input.cc <= r.maxCc
+  );
+  if (!engineRate) {
+    throw new Error(`Cilindrada ${input.cc} fora dos limites da categoria ${input.category}`);
+  }
+  engineComponent = engineRate.rate;
 
-    // Add diesel surcharge if applicable
-    if (input.fuel === "diesel") {
-      const dieselSurchargeRate = tables.categoryA.dieselSurcharge.find(
-        r => input.cc >= r.minCc && input.cc <= r.maxCc
-      );
-      if (dieselSurchargeRate) {
-        dieselExtra = dieselSurchargeRate.surcharge;
-        subtotal += dieselExtra;
-      }
-    }
-  } else {
-    // Use Category B (cilindrada + CO2) - must have CO2 value
+  // 4. Calculate CO2 component (only for categories B, C, D)
+  if (input.category === "B" || input.category === "C" || input.category === "D") {
     if (!input.co2 || input.co2 <= 0) {
-      throw new Error("CO2 obrigatório para veículos matriculados após 01/07/2007");
+      throw new Error("CO2 obrigatório para esta categoria de veículo");
     }
 
-    // Calculate cilindrada component
-    const categoryBRates = tables.categoryB.baseRates.find(
+    const co2Rate = categoryTable.co2Rates?.find(
+      (r: any) => input.co2 >= r.minCo2 && input.co2 <= r.maxCo2
+    );
+    if (!co2Rate) {
+      throw new Error(`CO2 ${input.co2} fora dos limites da categoria ${input.category}`);
+    }
+    co2Component = co2Rate.rate;
+  }
+
+  subtotal = engineComponent + co2Component;
+
+  // 5. Add diesel surcharge if applicable
+  if (input.fuel === "diesel") {
+    const dieselSurchargeRate = categoryTable.dieselSurcharge?.find(
       r => input.cc >= r.minCc && input.cc <= r.maxCc
     );
-    if (!categoryBRates) {
-      throw new Error("Cilindrada fora dos limites da tabela Categoria B");
-    }
-    engineComponent = categoryBRates.rate;
-
-    // Calculate CO2 component
-    const co2Rates = tables.categoryB.co2Rates.find(
-      r => input.co2 >= r.minCo2 && input.co2 <= r.maxCo2
-    );
-    if (!co2Rates) {
-      throw new Error("CO2 fora dos limites da tabela Categoria B");
-    }
-    co2Component = co2Rates.rate;
-
-    subtotal = engineComponent + co2Component;
-
-    // Add diesel surcharge if applicable
-    if (input.fuel === "diesel") {
-      const dieselSurchargeRate = tables.categoryA.dieselSurcharge.find(
-        r => input.cc >= r.minCc && input.cc <= r.maxCc
-      );
-      if (dieselSurchargeRate) {
-        dieselExtra = dieselSurchargeRate.surcharge;
-        subtotal += dieselExtra;
-      }
+    if (dieselSurchargeRate) {
+      dieselExtra = dieselSurchargeRate.surcharge;
+      subtotal += dieselExtra;
     }
   }
 
-  // 3. Calculate Age
+  // 6. Calculate Age
   const ageYears = calculateAge(input.year, input.month, input.day);
   
-  // 4. Age Reduction
+  // 7. Age Reduction
   let ageReductionPercent = 0;
   const ageBracket = tables.ageReduction.find(
     (r) => ageYears > r.minYears && ageYears <= r.maxYears
@@ -294,24 +273,28 @@ export function calculateIuc(input: IucInput): IucBreakdown {
   }
   const ageReductionAmount = subtotal * (ageReductionPercent / 100);
 
-  // 5. Electric Discount (for hybrid and other eligible vehicles)
+  // 8. Electric Discount (for hybrid and other eligible vehicles)
   let electricDiscountPercent = 0;
   let electricDiscountAmount = 0;
   
-  // Apply electric discount if applicable (for now, only for electric vehicles which are already exempt)
-  // This can be extended for other eligible vehicles in the future
+  // Apply electric discount if applicable
+  if (input.fuel === "hibrido") {
+    // For now, no discount for hybrids in 2026
+    electricDiscountPercent = 0;
+  }
 
-  // 6. Calculate Final Total
+  // 9. Calculate Final Total
   total = subtotal - ageReductionAmount - electricDiscountAmount;
   total = Math.max(0, total);
 
-  // Check for exemption based on age
+  // 10. Check for exemption based on age
   if (ageReductionPercent === 100) {
     return createIucExemptResult("Veículo com mais de 25 anos", version);
   }
 
   return {
     category: input.category,
+    vehicleType: input.vehicleType,
     engineComponent,
     co2Component,
     dieselExtra,
@@ -324,7 +307,8 @@ export function calculateIuc(input: IucInput): IucBreakdown {
 
 function createIucExemptResult(reason: string, version: string): IucBreakdown {
   return {
-    category: "M1",
+    category: "A",
+    vehicleType: "carro",
     engineComponent: 0,
     co2Component: 0,
     dieselExtra: 0,

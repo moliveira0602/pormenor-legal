@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { calculateIuc, IucInput, IucBreakdown, VehicleCategory, FuelType } from "../lib/isv";
+import { calculateIuc, IucInput, IucBreakdown, IucCategory, FuelType, VehicleType } from "../lib/isv";
 
 // Initial form state for IUC
 const INITIAL_FORM: IucInput = {
-  category: "M1",
+  category: "A",
+  vehicleType: "carro",
   fuel: "diesel",
   year: new Date().getFullYear(),
   month: 1,
@@ -70,10 +71,12 @@ export default function IucSimulator() {
       return;
     }
 
-    // Validate category (only M1 supported)
-    if (form.category !== "M1") {
-      setError("Este simulador é apenas para veículos M1 (ligeiros de passageiros).");
-      return;
+    // Validate CO2 for categories that require it
+    if (form.category === "B" || form.category === "C" || form.category === "D") {
+      if (!form.co2 || form.co2 <= 0) {
+        setError("CO2 obrigatório para esta categoria de veículo.");
+        return;
+      }
     }
 
     try {
@@ -175,8 +178,21 @@ export default function IucSimulator() {
               </div>
             </div>
 
-            {/* Tipo de combustível, Cilindrada e Emissões na mesma linha */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Categoria e Tipo de combustível */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-navy uppercase tracking-wider">
+                  Categoria do Veículo
+                </label>
+                <select className={inputClass} value={form.category} onChange={handleChange("category")}>
+                  <option value="A">Categoria A - Veículos anteriores a Junho/2007</option>
+                  <option value="B">Categoria B - Veículos a partir de Junho/2007</option>
+                  <option value="C">Categoria C - Veículos ligeiros de mercadorias</option>
+                  <option value="D">Categoria D - Veículos pesados de mercadorias</option>
+                  <option value="E">Categoria E - Motociclos e ciclomotores</option>
+                </select>
+              </div>
+
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-navy uppercase tracking-wider">
                   Tipo de combustível
@@ -189,7 +205,10 @@ export default function IucSimulator() {
                   <option value="gpl">GPL/Gás Natural</option>
                 </select>
               </div>
+            </div>
 
+            {/* Cilindrada e Emissões */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-navy uppercase tracking-wider">
                   Cilindrada (cm³)

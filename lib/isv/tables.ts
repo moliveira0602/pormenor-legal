@@ -73,45 +73,126 @@ export const TABLES_2025: IsvTables = {
   },
 };
 
-// IUC Tables for 2025
-export const IUC_TABLES_2025 = {
-  // Base rates per category and fuel type (EUR per 1000cc)
-  baseRates: {
-    M1: {
-      gasolina: 1.5, // EUR per 1000cc
-      diesel: 2.0,
-      hibrido: 1.0,
-      eletrico: 0.0, // Isento
-      gpl: 1.2,
+// IUC Tables for 2026
+export const IUC_TABLES_2026 = {
+  categories: {
+    // Categoria A: Veículos anteriores a Junho de 2007
+    A: {
+      baseRates: [
+        { minCc: 0, maxCc: 1000, rate: 19.90 },
+        { minCc: 1001, maxCc: 1300, rate: 39.95 },
+        { minCc: 1301, maxCc: 1750, rate: 62.40 },
+        { minCc: 1751, maxCc: 2600, rate: 158.31 },
+        { minCc: 2601, maxCc: 3500, rate: 287.49 },
+        { minCc: 3501, maxCc: Infinity, rate: 512.23 },
+      ],
+      dieselSurcharge: [
+        { minCc: 0, maxCc: 1500, surcharge: 3.14 },
+        { minCc: 1501, maxCc: 2000, surcharge: 6.31 },
+        { minCc: 2001, maxCc: 3000, surcharge: 9.86 },
+        { minCc: 3001, maxCc: Infinity, surcharge: 25.01 },
+      ],
     },
-    N1: {
-      gasolina: 2.0,
-      diesel: 2.5,
-      hibrido: 1.5,
-      eletrico: 0.0,
-      gpl: 1.8,
+    // Categoria B: Veículos a partir de Junho de 2007
+    B: {
+      baseRates: [
+        { minCc: 0, maxCc: 1000, rate: 19.90 },
+        { minCc: 1001, maxCc: 1300, rate: 39.95 },
+        { minCc: 1301, maxCc: 1750, rate: 62.40 },
+        { minCc: 1751, maxCc: 2600, rate: 158.31 },
+        { minCc: 2601, maxCc: 3500, rate: 287.49 },
+        { minCc: 3501, maxCc: Infinity, rate: 512.23 },
+      ],
+      co2Rates: [
+        { minCo2: 0, maxCo2: 100, rate: 10.00 },
+        { minCo2: 101, maxCo2: 150, rate: 15.00 },
+        { minCo2: 151, maxCo2: 200, rate: 25.00 },
+        { minCo2: 201, maxCo2: 250, rate: 40.00 },
+        { minCo2: 251, maxCo2: 300, rate: 60.00 },
+        { minCo2: 301, maxCo2: Infinity, rate: 80.00 },
+      ],
+      dieselSurcharge: [
+        { minCc: 0, maxCc: 1500, surcharge: 6.31 },
+        { minCc: 1501, maxCc: 2000, surcharge: 12.62 },
+        { minCc: 2001, maxCc: 3000, surcharge: 19.72 },
+        { minCc: 3001, maxCc: Infinity, surcharge: 50.02 },
+      ],
     },
-  },
-  // CO2 rates per category and fuel type (EUR per 1000g/km)
-  co2Rates: {
-    M1: {
-      gasolina: 0.05, // EUR per 1000g/km
-      diesel: 0.10,
-      hibrido: 0.03,
-      eletrico: 0.0, // Isento
-      gpl: 0.04,
+    // Categoria C: Veículos ligeiros de mercadorias
+    C: {
+      baseRates: [
+        { minCc: 0, maxCc: 1000, rate: 19.90 },
+        { minCc: 1001, maxCc: 1300, rate: 39.95 },
+        { minCc: 1301, maxCc: 1750, rate: 62.40 },
+        { minCc: 1751, maxCc: 2600, rate: 158.31 },
+        { minCc: 2601, maxCc: 3500, rate: 287.49 },
+        { minCc: 3501, maxCc: Infinity, rate: 512.23 },
+      ],
+      co2Rates: [
+        { minCo2: 0, maxCo2: 100, rate: 12.00 },
+        { minCo2: 101, maxCo2: 150, rate: 18.00 },
+        { minCo2: 151, maxCo2: 200, rate: 30.00 },
+        { minCo2: 201, maxCo2: 250, rate: 48.00 },
+        { minCo2: 251, maxCo2: 300, rate: 72.00 },
+        { minCo2: 301, maxCo2: Infinity, rate: 96.00 },
+      ],
+      dieselSurcharge: [
+        { minCc: 0, maxCc: 1500, surcharge: 7.57 },
+        { minCc: 1501, maxCc: 2000, surcharge: 15.14 },
+        { minCc: 2001, maxCc: 3000, surcharge: 23.64 },
+        { minCc: 3001, maxCc: Infinity, surcharge: 60.04 },
+      ],
     },
-    N1: {
-      gasolina: 0.06,
-      diesel: 0.12,
-      hibrido: 0.04,
-      eletrico: 0.0,
-      gpl: 0.05,
+    // Categoria D: Veículos pesados de mercadorias
+    D: {
+      baseRates: [
+        { minCc: 0, maxCc: 1000, rate: 25.00 },
+        { minCc: 1001, maxCc: 1300, rate: 50.00 },
+        { minCc: 1301, maxCc: 1750, rate: 78.00 },
+        { minCc: 1751, maxCc: 2600, rate: 198.00 },
+        { minCc: 2601, maxCc: 3500, rate: 360.00 },
+        { minCc: 3501, maxCc: Infinity, rate: 640.00 },
+      ],
+      co2Rates: [
+        { minCo2: 0, maxCo2: 100, rate: 15.00 },
+        { minCo2: 101, maxCo2: 150, rate: 22.50 },
+        { minCo2: 151, maxCo2: 200, rate: 37.50 },
+        { minCo2: 201, maxCo2: 250, rate: 60.00 },
+        { minCo2: 251, maxCo2: 300, rate: 90.00 },
+        { minCo2: 301, maxCo2: Infinity, rate: 120.00 },
+      ],
+      dieselSurcharge: [
+        { minCc: 0, maxCc: 1500, surcharge: 9.46 },
+        { minCc: 1501, maxCc: 2000, surcharge: 18.92 },
+        { minCc: 2001, maxCc: 3000, surcharge: 29.55 },
+        { minCc: 3001, maxCc: Infinity, surcharge: 75.05 },
+      ],
     },
-  },
-  // Diesel surcharge
-  dieselSurcharge: {
-    amount: 500, // EUR
+    // Categoria E: Motociclos, ciclomotores, triciclos e quadriciclos
+    E: {
+      baseRates: [
+        { minCc: 0, maxCc: 50, rate: 8.80 },
+        { minCc: 51, maxCc: 125, rate: 12.55 },
+        { minCc: 126, maxCc: 250, rate: 17.49 },
+        { minCc: 251, maxCc: 400, rate: 36.09 },
+        { minCc: 401, maxCc: 600, rate: 79.72 },
+        { minCc: 601, maxCc: Infinity, rate: 120.90 },
+      ],
+      co2Rates: [
+        { minCo2: 0, maxCo2: 100, rate: 5.00 },
+        { minCo2: 101, maxCo2: 150, rate: 7.50 },
+        { minCo2: 151, maxCo2: 200, rate: 12.50 },
+        { minCo2: 201, maxCo2: 250, rate: 20.00 },
+        { minCo2: 251, maxCo2: 300, rate: 30.00 },
+        { minCo2: 301, maxCo2: Infinity, rate: 40.00 },
+      ],
+      dieselSurcharge: [
+        { minCc: 0, maxCc: 1500, surcharge: 1.57 },
+        { minCc: 1501, maxCc: 2000, surcharge: 3.14 },
+        { minCc: 2001, maxCc: 3000, surcharge: 4.91 },
+        { minCc: 3001, maxCc: Infinity, surcharge: 12.50 },
+      ],
+    },
   },
   // Age reduction table for IUC
   ageReduction: [
@@ -127,46 +208,134 @@ export const IUC_TABLES_2025 = {
   electricDiscount: {
     percent: 100, // 100% discount for electric vehicles
   },
-  // IUC Category A tables (for vehicles matriculated before 2007-07-01)
-  categoryA: {
-    // Base rates per cilindrada range (EUR)
-    baseRates: [
-      { minCc: 0, maxCc: 1000, rate: 39.95 },
-      { minCc: 1001, maxCc: 1500, rate: 39.95 },
-      { minCc: 1501, maxCc: 2000, rate: 39.95 },
-      { minCc: 2001, maxCc: 2500, rate: 47.94 },
-      { minCc: 2501, maxCc: 3000, rate: 55.93 },
-      { minCc: 3001, maxCc: Infinity, rate: 63.92 },
-    ],
-    // Diesel surcharge per cilindrada range (EUR)
-    dieselSurcharge: [
-      { minCc: 0, maxCc: 1000, surcharge: 6.31 },
-      { minCc: 1001, maxCc: 1500, surcharge: 6.31 },
-      { minCc: 1501, maxCc: 2000, surcharge: 6.31 },
-      { minCc: 2001, maxCc: 2500, surcharge: 7.57 },
-      { minCc: 2501, maxCc: 3000, surcharge: 8.83 },
-      { minCc: 3001, maxCc: Infinity, surcharge: 10.09 },
-    ],
+};
+
+// IUC Tables for 2025 (mantido para compatibilidade)
+export const IUC_TABLES_2025 = {
+  categories: {
+    A: {
+      baseRates: [
+        { minCc: 0, maxCc: 1000, rate: 19.90 },
+        { minCc: 1001, maxCc: 1300, rate: 39.95 },
+        { minCc: 1301, maxCc: 1750, rate: 62.40 },
+        { minCc: 1751, maxCc: 2600, rate: 158.31 },
+        { minCc: 2601, maxCc: 3500, rate: 287.49 },
+        { minCc: 3501, maxCc: Infinity, rate: 512.23 },
+      ],
+      dieselSurcharge: [
+        { minCc: 0, maxCc: 1500, surcharge: 3.14 },
+        { minCc: 1501, maxCc: 2000, surcharge: 6.31 },
+        { minCc: 2001, maxCc: 3000, surcharge: 9.86 },
+        { minCc: 3001, maxCc: Infinity, surcharge: 25.01 },
+      ],
+    },
+    B: {
+      baseRates: [
+        { minCc: 0, maxCc: 1000, rate: 19.90 },
+        { minCc: 1001, maxCc: 1300, rate: 39.95 },
+        { minCc: 1301, maxCc: 1750, rate: 62.40 },
+        { minCc: 1751, maxCc: 2600, rate: 158.31 },
+        { minCc: 2601, maxCc: 3500, rate: 287.49 },
+        { minCc: 3501, maxCc: Infinity, rate: 512.23 },
+      ],
+      co2Rates: [
+        { minCo2: 0, maxCo2: 100, rate: 10.00 },
+        { minCo2: 101, maxCo2: 150, rate: 15.00 },
+        { minCo2: 151, maxCo2: 200, rate: 25.00 },
+        { minCo2: 201, maxCo2: 250, rate: 40.00 },
+        { minCo2: 251, maxCo2: 300, rate: 60.00 },
+        { minCo2: 301, maxCo2: Infinity, rate: 80.00 },
+      ],
+      dieselSurcharge: [
+        { minCc: 0, maxCc: 1500, surcharge: 6.31 },
+        { minCc: 1501, maxCc: 2000, surcharge: 12.62 },
+        { minCc: 2001, maxCc: 3000, surcharge: 19.72 },
+        { minCc: 3001, maxCc: Infinity, surcharge: 50.02 },
+      ],
+    },
+    C: {
+      baseRates: [
+        { minCc: 0, maxCc: 1000, rate: 19.90 },
+        { minCc: 1001, maxCc: 1300, rate: 39.95 },
+        { minCc: 1301, maxCc: 1750, rate: 62.40 },
+        { minCc: 1751, maxCc: 2600, rate: 158.31 },
+        { minCc: 2601, maxCc: 3500, rate: 287.49 },
+        { minCc: 3501, maxCc: Infinity, rate: 512.23 },
+      ],
+      co2Rates: [
+        { minCo2: 0, maxCo2: 100, rate: 12.00 },
+        { minCo2: 101, maxCo2: 150, rate: 18.00 },
+        { minCo2: 151, maxCo2: 200, rate: 30.00 },
+        { minCo2: 201, maxCo2: 250, rate: 48.00 },
+        { minCo2: 251, maxCo2: 300, rate: 72.00 },
+        { minCo2: 301, maxCo2: Infinity, rate: 96.00 },
+      ],
+      dieselSurcharge: [
+        { minCc: 0, maxCc: 1500, surcharge: 7.57 },
+        { minCc: 1501, maxCc: 2000, surcharge: 15.14 },
+        { minCc: 2001, maxCc: 3000, surcharge: 23.64 },
+        { minCc: 3001, maxCc: Infinity, surcharge: 60.04 },
+      ],
+    },
+    D: {
+      baseRates: [
+        { minCc: 0, maxCc: 1000, rate: 25.00 },
+        { minCc: 1001, maxCc: 1300, rate: 50.00 },
+        { minCc: 1301, maxCc: 1750, rate: 78.00 },
+        { minCc: 1751, maxCc: 2600, rate: 198.00 },
+        { minCc: 2601, maxCc: 3500, rate: 360.00 },
+        { minCc: 3501, maxCc: Infinity, rate: 640.00 },
+      ],
+      co2Rates: [
+        { minCo2: 0, maxCo2: 100, rate: 15.00 },
+        { minCo2: 101, maxCo2: 150, rate: 22.50 },
+        { minCo2: 151, maxCo2: 200, rate: 37.50 },
+        { minCo2: 201, maxCo2: 250, rate: 60.00 },
+        { minCo2: 251, maxCo2: 300, rate: 90.00 },
+        { minCo2: 301, maxCo2: Infinity, rate: 120.00 },
+      ],
+      dieselSurcharge: [
+        { minCc: 0, maxCc: 1500, surcharge: 9.46 },
+        { minCc: 1501, maxCc: 2000, surcharge: 18.92 },
+        { minCc: 2001, maxCc: 3000, surcharge: 29.55 },
+        { minCc: 3001, maxCc: Infinity, surcharge: 75.05 },
+      ],
+    },
+    E: {
+      baseRates: [
+        { minCc: 0, maxCc: 50, rate: 8.80 },
+        { minCc: 51, maxCc: 125, rate: 12.55 },
+        { minCc: 126, maxCc: 250, rate: 17.49 },
+        { minCc: 251, maxCc: 400, rate: 36.09 },
+        { minCc: 401, maxCc: 600, rate: 79.72 },
+        { minCc: 601, maxCc: Infinity, rate: 120.90 },
+      ],
+      co2Rates: [
+        { minCo2: 0, maxCo2: 100, rate: 5.00 },
+        { minCo2: 101, maxCo2: 150, rate: 7.50 },
+        { minCo2: 151, maxCo2: 200, rate: 12.50 },
+        { minCo2: 201, maxCo2: 250, rate: 20.00 },
+        { minCo2: 251, maxCo2: 300, rate: 30.00 },
+        { minCo2: 301, maxCo2: Infinity, rate: 40.00 },
+      ],
+      dieselSurcharge: [
+        { minCc: 0, maxCc: 1500, surcharge: 1.57 },
+        { minCc: 1501, maxCc: 2000, surcharge: 3.14 },
+        { minCc: 2001, maxCc: 3000, surcharge: 4.91 },
+        { minCc: 3001, maxCc: Infinity, surcharge: 12.50 },
+      ],
+    },
   },
-  // IUC Category B tables (for vehicles matriculated after 2007-07-01)
-  categoryB: {
-    // Base rates per cilindrada range (EUR)
-    baseRates: [
-      { minCc: 0, maxCc: 1000, rate: 39.95 },
-      { minCc: 1001, maxCc: 1500, rate: 39.95 },
-      { minCc: 1501, maxCc: 2000, rate: 39.95 },
-      { minCc: 2001, maxCc: 2500, rate: 47.94 },
-      { minCc: 2501, maxCc: 3000, rate: 55.93 },
-      { minCc: 3001, maxCc: Infinity, rate: 63.92 },
-    ],
-    // CO2 rates per emission range (EUR)
-    co2Rates: [
-      { minCo2: 0, maxCo2: 100, rate: 10.00 },
-      { minCo2: 101, maxCo2: 150, rate: 15.00 },
-      { minCo2: 151, maxCo2: 200, rate: 25.00 },
-      { minCo2: 201, maxCo2: 250, rate: 40.00 },
-      { minCo2: 251, maxCo2: 300, rate: 60.00 },
-      { minCo2: 301, maxCo2: Infinity, rate: 80.00 },
-    ],
+  ageReduction: [
+    { minYears: 0, maxYears: 1, percent: 0 },
+    { minYears: 1, maxYears: 5, percent: 0 },
+    { minYears: 5, maxYears: 10, percent: 0 },
+    { minYears: 10, maxYears: 15, percent: 0 },
+    { minYears: 15, maxYears: 20, percent: 0 },
+    { minYears: 20, maxYears: 25, percent: 0 },
+    { minYears: 25, maxYears: Infinity, percent: 100 },
+  ],
+  electricDiscount: {
+    percent: 100,
   },
 };
