@@ -13,7 +13,7 @@ const assuntos = [
   "Atribuição de Matrículas da Época",
   "Levantamento de Documentos Apreendidos",
   "Alterações e Renovações de Cartas de Condução",
-  "Reconstrução de Documentação",
+  "Pedido de Cancelamento de Matrícula",
   "Reconstrução de Processos Inacabados",
 ];
 
@@ -36,11 +36,6 @@ export default function ServicosIMT() {
           <h1 className="font-display font-extrabold text-4xl tracking-tight">
             Serviços IMT
           </h1>
-          <p className="text-white/70 mt-3 max-w-3xl">
-            Tratamos de alterações e transformações, pedidos e cancelamentos de matrículas, averbamentos,
-            reposição de documentação e renovação de cartas. Cuidamos da parte burocrática e do contacto com as entidades,
-            para que avance com segurança e sem perdas de tempo.
-          </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a href="/#contacts" className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-display font-bold no-underline">
               Falar com a Pormenor
@@ -52,31 +47,6 @@ export default function ServicosIMT() {
       <section className="py-14 px-6">
         <div className="max-w-[1100px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
           <div className="md:col-span-2 space-y-8">
-            <div>
-              <h2 className="font-display font-extrabold text-navy text-2xl mb-2">
-                Intervenções mais comuns
-              </h2>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-muted">
-                <li className="bg-[var(--navy-mid)]/5 border border-[var(--border)] rounded-xl p-4">
-                  Alterações e transformações de viaturas com tratamento integral da burocracia
-                </li>
-                <li className="bg-[var(--navy-mid)]/5 border border-[var(--border)] rounded-xl p-4">
-                  Reconstrução de processos inacabados e documentação em falta
-                </li>
-                <li className="bg-[var(--navy-mid)]/5 border border-[var(--border)] rounded-xl p-4">
-                  Pedidos e cancelamento de matrículas, atribuição de matrículas da época
-                </li>
-                <li className="bg-[var(--navy-mid)]/5 border border-[var(--border)] rounded-xl p-4">
-                  Averbamentos: películas, GPL, PBR; alteração de cor, pneus e outras características
-                </li>
-                <li className="bg-[var(--navy-mid)]/5 border border-[var(--border)] rounded-xl p-4">
-                  Levantamento de documentos apreendidos e reposição de matrículas canceladas
-                </li>
-                <li className="bg-[var(--navy-mid)]/5 border border-[var(--border)] rounded-xl p-4">
-                  Alterações e renovações de cartas de condução
-                </li>
-              </ul>
-            </div>
           </div>
 
           <aside className="space-y-4">

@@ -102,6 +102,31 @@ export default function IsvSimulator({ title = "Simulador de ISV" }: IsvSimulato
 
         <div className="bg-white rounded-3xl p-10 border border-[var(--border)] shadow-[0_4px_32px_rgba(7,17,43,0.07)]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* Vehicle Type */}
+            <div className="flex flex-col gap-2">
+              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
+                Tipo de Veículo
+              </label>
+              <select className={inputClass} value={form.category} onChange={handleChange("category")}>
+                <option value="M1">Ligeiro de passageiros (M1)</option>
+                <option value="N1">Ligeiro de mercadorias (N1)</option>
+                <option value="M2">Autocarro (M2)</option>
+                <option value="N2">Camião (N2)</option>
+                <option value="L">Motociclo (L)</option>
+              </select>
+            </div>
+
+            {/* Country Selection */}
+            <div className="flex flex-col gap-2">
+              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
+                País de Origem
+              </label>
+              <select className={inputClass} value={form.origin} onChange={handleChange("origin")}>
+                <option value="eu">Estado-Membro da União Europeia</option>
+                <option value="noneu">País terceiro</option>
+              </select>
+            </div>
+
             {/* Condition */}
             <div className="flex flex-col gap-2">
               <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
@@ -220,16 +245,6 @@ export default function IsvSimulator({ title = "Simulador de ISV" }: IsvSimulato
               </div>
             )}
 
-            {/* Origin */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[0.78rem] font-bold text-navy uppercase tracking-wider">
-                País de Origem
-              </label>
-              <select className={inputClass} value={form.origin} onChange={handleChange("origin")}>
-                <option value="eu">União Europeia (Com Desconto Idade)</option>
-                <option value="noneu">Fora da UE (Sem Desconto Idade)</option>
-              </select>
-            </div>
 
             {/* Cycle */}
             <div className="flex flex-col gap-2">
@@ -343,6 +358,22 @@ export default function IsvSimulator({ title = "Simulador de ISV" }: IsvSimulato
                   </ul>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* CTA Button */}
+          {result && !result.isExempt && (
+            <div className="mt-8 text-center">
+              <a
+                href={`/?assunto=Legaliza%C3%A7%C3%A3o%20de%20Viaturas%20Importadas&isv=${encodeURIComponent(formatCurrency(result.finalTotal))}#contacts`}
+                className="inline-flex items-center gap-3 bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-xl font-display font-bold text-lg no-underline transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/25"
+              >
+                <span className="material-symbols-outlined text-2xl">send</span>
+                Solicite um orçamento de legalização
+              </a>
+              <p className="text-muted text-sm mt-3">
+                O valor do ISV será incluído no seu orçamento de legalização
+              </p>
             </div>
           )}
         </div>

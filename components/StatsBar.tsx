@@ -5,10 +5,10 @@ interface Stat {
 }
 
 const stats: Stat[] = [
-  { icon: "emoji_events", value: "4.575", label: "Veículos legalizados" },
-  { icon: "home_repair_service", value: "17", label: "Serviços disponíveis" },
-  { icon: "groups", value: "4.478", label: "Clientes satisfeitos" },
-  { icon: "location_on", value: "Fafe", label: "Atendimento presencial" },
+  { icon: "emoji_events", value: "+45.000", label: "Veículos Legalizados" },
+  { icon: "schedule", value: "20 anos", label: "de experiência" },
+  { icon: "groups", value: "+15.000", label: "Clientes satisfeitos" },
+  { icon: "star", value: "4.9/5", label: "rating" },
 ];
 
 export default function StatsBar() {
@@ -28,10 +28,10 @@ export default function StatsBar() {
               </span>
             </div>
             <div>
-              <strong className="font-display font-extrabold text-navy text-[1.3rem] block leading-none">
+              <strong className="font-display font-extrabold text-navy text-[1.5rem] block leading-none">
                 {s.value}
               </strong>
-              <span className="text-muted text-xs mt-0.5 block">{s.label}</span>
+              <span className="text-muted text-sm mt-0.5 block font-semibold">{s.label}</span>
             </div>
           </div>
         ))}

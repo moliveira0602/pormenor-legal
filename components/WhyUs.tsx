@@ -61,7 +61,7 @@ export default function WhyUs() {
             <span className="w-5 h-0.5 bg-primary inline-block" />
             Porquê Nós
           </div>
-          <h2 className="font-display font-extrabold text-navy text-[2.2rem] tracking-tight mb-4">
+          <h2 className="font-display font-extrabold text-navy text-[2.5rem] tracking-tight mb-4">
             Porquê escolher a Pormenor?
           </h2>
           <p className="text-muted leading-relaxed text-base mb-7">

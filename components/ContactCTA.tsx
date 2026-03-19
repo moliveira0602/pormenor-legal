@@ -37,7 +37,7 @@ export default function ContactCTA() {
                 href="/?assunto=Legaliza%C3%A7%C3%A3o%20de%20Viaturas%20Importadas#contacts"
                 className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-display font-bold no-underline"
               >
-                Contactar
+                Solicitar Legalização Automóvel
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </a>
             </div>

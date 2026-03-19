@@ -44,8 +44,8 @@ export default function ImportarCarroPage() {
       <Header />
       <JsonLd data={guideSchema} />
 
-      <section className="bg-navy text-white py-20 px-6">
-        <div className="max-w-[1100px] mx-auto text-center">
+      <section className="bg-navy text-white py-20 px-6 hero-grid relative overflow-hidden">
+        <div className="max-w-[1100px] mx-auto text-center relative z-10">
           <h1 className="font-display font-extrabold text-4xl md:text-6xl tracking-tight mb-6">
             Guia de Importação Automóvel
           </h1>
@@ -55,7 +55,7 @@ export default function ImportarCarroPage() {
         </div>
       </section>
 
-      <section className="py-16 px-6">
+      <section className="py-16 px-6 section-padding">
         <div className="max-w-[1100px] mx-auto">
           <h2 className="text-navy font-display font-bold text-3xl mb-8 text-center">De onde quer importar?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -70,7 +70,7 @@ export default function ImportarCarroPage() {
               <Link 
                 key={country.slug}
                 href={`/importar-de/${country.slug}`}
-                className="group bg-white border border-gray-200 rounded-xl p-6 hover:border-primary hover:shadow-lg transition-all no-underline"
+                className="group card-elevated hover:border-primary transition-all no-underline"
               >
                 <div className="text-4xl mb-4">{country.flag}</div>
                 <h3 className="text-xl font-bold text-navy group-hover:text-primary transition-colors">Importar da {country.name}</h3>
@@ -88,22 +88,22 @@ export default function ImportarCarroPage() {
             Para além do valor do carro, deve considerar o transporte, a legalização (ISV), a inspeção e as taxas administrativas.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-            <div className="bg-white p-6 rounded-xl border border-gray-200">
+            <div className="card-elevated">
               <h4 className="font-bold text-navy mb-2">1. Transporte</h4>
               <p className="text-sm text-muted">Varia entre 500€ e 1500€ dependendo do país de origem e método (camião vs conduzir).</p>
             </div>
-            <div className="bg-white p-6 rounded-xl border border-gray-200">
+            <div className="card-elevated">
               <h4 className="font-bold text-navy mb-2">2. ISV (Imposto)</h4>
               <p className="text-sm text-muted">O maior custo. Depende da cilindrada, CO2 e idade do carro. Use o nosso simulador.</p>
             </div>
-            <div className="bg-white p-6 rounded-xl border border-gray-200">
+            <div className="card-elevated">
               <h4 className="font-bold text-navy mb-2">3. Processo</h4>
               <p className="text-sm text-muted">Inspeção, IMT, Conservatória e matrículas rondam os 250€-400€ em taxas estatais.</p>
             </div>
           </div>
           <div className="mt-12">
-            <Link href="/simulador-isv" className="inline-block bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-xl font-display font-bold no-underline transition-all shadow-lg shadow-primary/20">
-              Simular Custo Total
+            <Link href="/simulador-isv" className="btn-primary">
+              Solicitar Legalização Automóvel
             </Link>
           </div>
         </div>

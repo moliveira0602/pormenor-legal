@@ -64,7 +64,7 @@ export default function Testimonials() {
             <span className="w-5 h-0.5 bg-primary inline-block" />
             Clientes Satisfeitos
           </div>
-          <h2 className="font-display font-extrabold text-navy text-[2.2rem] tracking-tight">
+          <h2 className="font-display font-extrabold text-navy text-[2.5rem] tracking-tight">
             O que dizem os nossos clientes
           </h2>
         </div>

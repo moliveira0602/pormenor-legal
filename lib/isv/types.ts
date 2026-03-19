@@ -92,18 +92,21 @@ export interface IsvTables {
   };
 }
 
+// Tipos para IUC (Autodoc-style)
 export interface IucInput {
-  category: IucCategory;
-  vehicleType: VehicleType;
-  fuel: FuelType;
+  country: "portugal" | "eu" | "eea" | "other"; // País de origem
+  yearRange: "pre_2007" | "2007_2018" | "post_2018"; // Intervalo de anos (WLTP/NEDC)
+  registrationDate: Date; // Data da primeira matrícula
+  cc: number; // Cilindrada em cm³
+  co2: number; // Emissões CO2 em g/km
+  fuel: "diesel" | "gasolina" | "hibrido" | "eletrico" | "gpl"; // Tipo de combustível
+  category: "A" | "B" | "C" | "D" | "E"; // Categoria do veículo
+  isImported: boolean; // Veículo importado
   year: number;
   month: number;
   day: number;
-  cc: number;
-  co2: number;
-  co2Standard: "NEDC" | "WLTP";
   origin: "national" | "foreign";
-  registrationDate?: Date;
+  vehicleType: VehicleType;
 }
 
 export interface IucBreakdown {
@@ -111,15 +114,49 @@ export interface IucBreakdown {
   vehicleType: VehicleType;
   engineComponent: number;
   co2Component: number;
-  dieselExtra: number;
+  additionalCo2: number; // Componente adicional de CO2
+  registrationYearCoefficient: number; // Coeficiente do ano de matrícula
+  fuelSurcharge: number; // Agravamento por combustível
   subtotal: number;
   total: number;
   isExempt: boolean;
   exemptReason?: string;
   version: string;
+  dieselExtra?: number; // Backward compatibility
 }
 
-// Estrutura para tabelas IUC por categoria
+export interface IsvTableEntry {
+  limit: number; // Upper limit of the bracket (Infinity for last)
+  rate: number;
+  deductible: number;
+}
+
+export interface AgeReductionEntry {
+  minYears: number;
+  maxYears: number;
+  percent: number;
+}
+
+export interface IsvTables {
+  cc: IsvTableEntry[];
+  co2: {
+    gasolina: {
+      nedc: IsvTableEntry[];
+      wltp: IsvTableEntry[];
+    };
+    diesel: {
+      nedc: IsvTableEntry[];
+      wltp: IsvTableEntry[];
+    };
+  };
+  ageReduction: AgeReductionEntry[];
+  dieselSurcharge: {
+    threshold: number;
+    amount: number;
+  };
+}
+
+// Estrutura para tabelas IUC por categoria (Autodoc-style)
 export interface IucCategoryTable {
   baseRates: Array<{
     minCc: number;
@@ -131,10 +168,20 @@ export interface IucCategoryTable {
     maxCo2: number;
     rate: number;
   }>;
+  additionalCo2Rates?: Array<{
+    minCo2: number;
+    maxCo2: number;
+    rate: number;
+  }>;
   dieselSurcharge?: Array<{
     minCc: number;
     maxCc: number;
     surcharge: number;
+  }>;
+  registrationYearCoefficients?: Array<{
+    minYear: number;
+    maxYear: number;
+    coefficient: number;
   }>;
 }
 

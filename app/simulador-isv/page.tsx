@@ -49,8 +49,8 @@ export default function SimuladorISVPage() {
       <JsonLd data={faqSchema} />
       
       {/* Hero Section */}
-      <section className="bg-navy text-white pt-24 pb-12 px-6">
-        <div className="max-w-[1100px] mx-auto text-center">
+      <section className="bg-navy text-white pt-24 pb-12 px-6 hero-grid relative overflow-hidden">
+        <div className="max-w-[1100px] mx-auto text-center relative z-10">
           <h1 className="font-display font-extrabold text-4xl md:text-5xl tracking-tight mb-4">
             Simulador ISV 2025
           </h1>
@@ -66,7 +66,7 @@ export default function SimuladorISVPage() {
       </div>
 
       {/* Content Section */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-16 px-6 bg-white section-padding">
         <div className="max-w-[900px] mx-auto space-y-12">
           
           <article className="prose prose-lg text-muted max-w-none">
@@ -122,30 +122,32 @@ export default function SimuladorISVPage() {
                 <Link 
                   key={brand.slug}
                   href={`/legalizacao/${brand.slug}`}
-                  className="block p-3 bg-gray-50 hover:bg-primary/10 border border-gray-200 hover:border-primary rounded-lg text-center text-sm font-semibold text-navy hover:text-primary transition-all no-underline"
+                  className="block p-3 card-elevated hover:border-primary transition-all no-underline"
                 >
-                  ISV {brand.name}
+                  <div className="text-center">
+                    <div className="font-bold text-navy text-lg">ISV {brand.name}</div>
+                  </div>
                 </Link>
               ))}
             </div>
 
             <h3 className="text-navy font-display font-bold text-2xl mt-8 mb-4">Perguntas Frequentes</h3>
             <div className="space-y-6">
-              <div>
+              <div className="card-elevated">
                 <h4 className="font-bold text-navy text-lg">Preciso do COC para calcular o ISV?</h4>
                 <p>Sim, o Certificado de Conformidade (COC) contém os valores oficiais de CO2 e cilindrada necessários para o cálculo exato. Se não tiver o COC, pode usar os valores do livrete estrangeiro.</p>
               </div>
-              <div>
+              <div className="card-elevated">
                 <h4 className="font-bold text-navy text-lg">O simulador inclui o IUC?</h4>
                 <p>Não, este simulador calcula apenas o ISV (Imposto Sobre Veículos). O IUC (Imposto Único de Circulação) é pago anualmente após a legalização.</p>
               </div>
             </div>
 
-            <div className="mt-12 p-8 bg-gray-50 rounded-2xl border border-gray-200 text-center">
+            <div className="mt-12 card-elevated">
               <h3 className="text-navy font-display font-bold text-2xl mb-2">Precisa de ajuda com a legalização?</h3>
               <p className="mb-6">Tratamos de todo o processo burocrático por si, desde o transporte até à matrícula.</p>
-              <a href="/legalizacao-automovel" className="inline-block bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-xl font-display font-bold no-underline transition-all shadow-lg shadow-primary/20">
-                Pedir Orçamento Gratuito
+              <a href="/legalizacao-automovel" className="btn-primary">
+                Solicitar Legalização Automóvel
               </a>
             </div>
 

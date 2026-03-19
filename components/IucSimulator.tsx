@@ -13,8 +13,11 @@ const INITIAL_FORM: IucInput = {
   day: 1,
   cc: 0,
   co2: 0,
-  co2Standard: "NEDC",
   origin: "national",
+  country: "portugal",
+  yearRange: "pre_2007",
+  registrationDate: new Date(),
+  isImported: false,
 };
 
 export default function IucSimulator() {
@@ -318,10 +321,22 @@ export default function IucSimulator() {
                           <span className="font-semibold">{formatCurrency(result.co2Component)}</span>
                         </div>
                       )}
-                      {result.dieselExtra > 0 && (
+                      {result.additionalCo2 > 0 && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span>CO2 Adicional</span>
+                          <span className="font-semibold">{formatCurrency(result.additionalCo2)}</span>
+                        </div>
+                      )}
+                      {result.registrationYearCoefficient !== 1.0 && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span>Coeficiente Ano</span>
+                          <span className="font-semibold">x{result.registrationYearCoefficient}</span>
+                        </div>
+                      )}
+                      {result.fuelSurcharge > 0 && (
                         <div className="flex justify-between items-center text-sm text-red-600">
-                          <span>Agravamento Diesel</span>
-                          <span className="font-semibold">+{formatCurrency(result.dieselExtra)}</span>
+                          <span>Agravamento Combustível</span>
+                          <span className="font-semibold">+{formatCurrency(result.fuelSurcharge)}</span>
                         </div>
                       )}
                       <div className="flex justify-between items-center text-sm border-t border-gray-200 pt-3">

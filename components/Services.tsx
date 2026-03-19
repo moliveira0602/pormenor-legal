@@ -1,45 +1,68 @@
 interface Service {
   icon: string;
   title: string;
-  description: string;
+  items: string[];
 }
 
 const services: Service[] = [
   {
     icon: "assignment",
     title: "Legalização Automóvel",
-    description:
-      "Acompanhamento completo até à matrícula nacional e registo final.",
+    items: [
+      "Acompanhamento completo até à matrícula nacional",
+      "Registo final no novo proprietário",
+      "Gestão de todo o processo burocrático"
+    ],
   },
   {
     icon: "home_repair_service",
     title: "Serviços IMT",
-    description:
-      "Renovação da carta, averbamentos, modelo 9 e outros procedimentos oficiais.",
+    items: [
+      "Renovação da carta de condução",
+      "Averbamentos e alterações",
+      "Modelo 9 e procedimentos oficiais"
+    ],
   },
   {
     icon: "apps",
     title: "Outros Serviços",
-    description:
-      "Tratamos de burocracias complementares para ter o veículo em total conformidade.",
+    items: [
+      "Burocracias complementares",
+      "Documentação adicional",
+      "Suporte administrativo"
+    ],
   },
   {
     icon: "description",
-    title: "COC e Homologação",
-    description:
-      "Obtenção do Certificado de Conformidade e número de homologação nacional.",
+    title: "Declarações Técnicas",
+    items: [
+      "Certificado CE de Conformidade (COC)",
+      "Certificação Documental (Modelo 9 - ACAP)",
+      "Certificado de Características Técnicas",
+      "Declaração de Pneumáticos",
+      "Declaração de Peso Bruto Rebocável",
+      "Declaração de Nº de motor",
+      "Chapas de construtor",
+      "Homologação IMT"
+    ],
   },
   {
     icon: "savings",
     title: "Isenções e Impostos",
-    description:
-      "Análise de isenção por mudança de residência e gestão de ISV/DAV.",
+    items: [
+      "Análise de isenção por mudança de residência",
+      "Gestão de ISV/DAV",
+      "Orientação fiscal especializada"
+    ],
   },
   {
     icon: "inventory",
-    title: "Documentação e Registos",
-    description:
-      "Conservatória, registos e demais documentação necessária ao processo.",
+    title: "Pedido de Cancelamento de Matrícula",
+    items: [
+      "Reconstrução de documentação",
+      "Cancelamento de matrículas",
+      "Regularização de processos"
+    ],
   },
 ];
 
@@ -53,7 +76,7 @@ export default function Services() {
             <span className="w-5 h-0.5 bg-primary inline-block" />
             O que oferecemos
           </div>
-          <h2 className="font-display font-extrabold text-navy text-[2.2rem] tracking-tight">
+          <h2 className="font-display font-extrabold text-navy text-[2.5rem] tracking-tight">
             Os Nossos Serviços
           </h2>
           <p className="text-muted mt-2 text-base">
@@ -73,12 +96,17 @@ export default function Services() {
                   {s.icon}
                 </span>
               </div>
-              <h3 className="font-display font-bold text-navy text-lg mb-2">
+              <h3 className="font-display font-bold text-navy text-lg mb-4">
                 {s.title}
               </h3>
-              <p className="text-muted text-sm leading-relaxed">
-                {s.description}
-              </p>
+              <ul className="space-y-2 text-muted text-sm leading-relaxed">
+                {s.items.map((item, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="material-symbols-outlined text-primary text-sm mt-0.5 flex-shrink-0">check_circle</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
               {s.title === "Legalização Automóvel" ? (
                 <a
                   href="/legalizacao-automovel"
@@ -98,6 +126,14 @@ export default function Services() {
               ) : s.title === "Outros Serviços" ? (
                 <a
                   href="/outros"
+                  className="inline-flex items-center gap-1 mt-4 text-primary font-semibold no-underline"
+                >
+                  Saiba mais
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+              ) : s.title === "Declarações Técnicas" ? (
+                <a
+                  href="/declaracoes-tecnicas"
                   className="inline-flex items-center gap-1 mt-4 text-primary font-semibold no-underline"
                 >
                   Saiba mais

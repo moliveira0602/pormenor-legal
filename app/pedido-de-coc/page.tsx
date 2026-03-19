@@ -173,17 +173,34 @@ export default function PedidoDeCOC() {
                 <>
                 <h3 className="text-white font-display font-extrabold text-2xl mb-2">Solicitar COC</h3>
                 <p className="text-white/70 mb-6">Preencha os dados do veículo para avançarmos com o pedido.</p>
+                <div className="text-center mb-4">
+                  <a href="/declaracoes-tecnicas" className="inline-flex items-center gap-2 text-primary hover:text-white font-semibold no-underline">
+                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                    Ver todos os serviços de Declarações Técnicas
+                  </a>
+                </div>
                 <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <input name="name" required className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Nome" />
                     <input name="email" required className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Email" type="email" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input name="phone" className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Telemóvel" type="tel" />
-                    <input name="plate" className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Matrícula (opcional)" />
+                    <input name="phone" required className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Contacto" type="tel" />
+                    <div className="grid grid-cols-2 gap-4">
+                        <input name="plate" className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Matrícula" />
+                        <input name="vin" required className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="VIN (Número de Chassis)" />
+                    </div>
                 </div>
-                 <div className="grid grid-cols-1 gap-4">
-                    <input name="vin" className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" placeholder="Número de Chassis (VIN)" />
+                <div className="grid grid-cols-1 gap-4">
+                    <select name="subject" required className="h-[50px] bg-white/10 border-white/10 rounded-lg px-4 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm">
+                        <option value="">Selecione o assunto</option>
+                        <option value="Pedido de COC">Pedido de COC</option>
+                        <option value="Declarações Técnicas">Declarações Técnicas</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                    <input name="files" type="file" multiple className="bg-white/10 border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm" />
                 </div>
                 <textarea name="message" className="w-full h-[120px] bg-white/10 border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 text-sm resize-none" placeholder="Mensagem adicional (opcional)" />
                 <button type="submit" disabled={isSubmitting} className="w-full h-[50px] bg-primary hover:bg-primary-dark rounded-lg font-display font-semibold text-white disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">

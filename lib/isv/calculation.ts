@@ -219,9 +219,11 @@ export function calculateIuc(input: IucInput): IucBreakdown {
 
   let engineComponent = 0;
   let co2Component = 0;
+  let additionalCo2 = 0;
   let dieselExtra = 0;
   let subtotal = 0;
   let total = 0;
+  let registrationYearCoefficient = 1.0;
 
   // 3. Calculate engine component based on cilindrada
   const engineRate = categoryTable.baseRates.find(
@@ -238,32 +240,53 @@ export function calculateIuc(input: IucInput): IucBreakdown {
       throw new Error("CO2 obrigatório para esta categoria de veículo");
     }
 
-    const co2Rate = categoryTable.co2Rates?.find(
+    // Base CO2 component
+    const co2Rate = (categoryTable as any).co2Rates?.find(
       (r: any) => input.co2 >= r.minCo2 && input.co2 <= r.maxCo2
     );
     if (!co2Rate) {
       throw new Error(`CO2 ${input.co2} fora dos limites da categoria ${input.category}`);
     }
     co2Component = co2Rate.rate;
+
+    // Additional CO2 component for higher emissions
+    const additionalCo2Rate = (categoryTable as any).additionalCo2Rates?.find(
+      (r: any) => input.co2 >= r.minCo2 && input.co2 <= r.maxCo2
+    );
+    if (additionalCo2Rate) {
+      additionalCo2 = additionalCo2Rate.rate;
+    }
   }
 
-  subtotal = engineComponent + co2Component;
+  // 5. Calculate registration year coefficient
+  if ((categoryTable as any).registrationYearCoefficients) {
+    const coefficient = (categoryTable as any).registrationYearCoefficients.find(
+      (r: any) => input.year >= r.minYear && input.year <= r.maxYear
+    );
+    if (coefficient) {
+      registrationYearCoefficient = coefficient.coefficient;
+    }
+  }
 
-  // 5. Add diesel surcharge if applicable
+  subtotal = (engineComponent + co2Component + additionalCo2) * registrationYearCoefficient;
+
+  // 6. Add diesel surcharge if applicable
+  let fuelSurcharge = 0;
   if (input.fuel === "diesel") {
     const dieselSurchargeRate = categoryTable.dieselSurcharge?.find(
       r => input.cc >= r.minCc && input.cc <= r.maxCc
     );
     if (dieselSurchargeRate) {
       dieselExtra = dieselSurchargeRate.surcharge;
-      subtotal += dieselExtra;
+      fuelSurcharge = dieselExtra;
+      subtotal += fuelSurcharge;
     }
   }
 
-  // 6. Calculate Age
+  // 7. Calculate Age
   const ageYears = calculateAge(input.year, input.month, input.day);
   
-  // 7. Age Reduction
+  // 8. Age Reduction
   let ageReductionPercent = 0;
   const ageBracket = tables.ageReduction.find(
     (r) => ageYears > r.minYears && ageYears <= r.maxYears
@@ -273,7 +296,7 @@ export function calculateIuc(input: IucInput): IucBreakdown {
   }
   const ageReductionAmount = subtotal * (ageReductionPercent / 100);
 
-  // 8. Electric Discount (for hybrid and other eligible vehicles)
+  // 9. Electric Discount (for hybrid and other eligible vehicles)
   let electricDiscountPercent = 0;
   let electricDiscountAmount = 0;
   
@@ -283,11 +306,11 @@ export function calculateIuc(input: IucInput): IucBreakdown {
     electricDiscountPercent = 0;
   }
 
-  // 9. Calculate Final Total
+  // 10. Calculate Final Total
   total = subtotal - ageReductionAmount - electricDiscountAmount;
   total = Math.max(0, total);
 
-  // 10. Check for exemption based on age
+  // 11. Check for exemption based on age
   if (ageReductionPercent === 100) {
     return createIucExemptResult("Veículo com mais de 25 anos", version);
   }
@@ -297,11 +320,14 @@ export function calculateIuc(input: IucInput): IucBreakdown {
     vehicleType: input.vehicleType,
     engineComponent,
     co2Component,
-    dieselExtra,
+    additionalCo2,
+    registrationYearCoefficient,
+    fuelSurcharge,
     subtotal,
     total,
     isExempt: false,
     version,
+    dieselExtra, // Backward compatibility
   };
 }
 
@@ -311,11 +337,14 @@ function createIucExemptResult(reason: string, version: string): IucBreakdown {
     vehicleType: "carro",
     engineComponent: 0,
     co2Component: 0,
-    dieselExtra: 0,
+    additionalCo2: 0,
+    registrationYearCoefficient: 1.0,
+    fuelSurcharge: 0,
     subtotal: 0,
     total: 0,
     isExempt: true,
     exemptReason: reason,
     version,
+    dieselExtra: 0, // Backward compatibility
   };
 }

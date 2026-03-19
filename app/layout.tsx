@@ -57,6 +57,9 @@ export const metadata: Metadata = {
   },
 };
 
+const whatsappNumber = "351912345678";
+const whatsappMessage = encodeURIComponent("Olá! Gostaria de saber mais sobre os serviços de legalização automóvel.");
+
 export default function RootLayout({
   children,
 }: {
@@ -79,6 +82,17 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         {children}
         <ScrollTop />
+        
+        {/* Floating WhatsApp Button */}
+        <a
+          href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-20 right-6 z-50 w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-300"
+          aria-label="Contactar via WhatsApp"
+        >
+          <span className="material-symbols-outlined text-white">forum</span>
+        </a>
       </body>
     </html>
   );

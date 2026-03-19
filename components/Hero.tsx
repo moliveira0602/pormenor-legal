@@ -39,7 +39,7 @@ export default function Hero() {
               href="#contacts"
               className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-7 py-4 rounded-xl font-display font-bold text-base transition-all shadow-xl shadow-primary/30 hover:-translate-y-0.5"
             >
-              Contactar
+              Solicitar Legalização Automóvel
               <span className="material-symbols-outlined text-[18px]">
                 arrow_forward
               </span>
