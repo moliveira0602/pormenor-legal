@@ -366,7 +366,7 @@ export default function IucSimulator() {
                       <p className="text-white text-xs font-bold uppercase tracking-widest mb-1">
                         Total Anual a Pagar
                       </p>
-                      <p className="font-display font-extrabold text-2xl">
+                      <p className="font-display font-extrabold text-2xl text-white">
                         {result.isExempt
                           ? "Isento"
                           : formatCurrency(result.total)}
