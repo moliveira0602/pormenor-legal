@@ -363,7 +363,7 @@ export default function IucSimulator() {
                 <div className="p-6 rounded-xl bg-gradient-to-r from-navy to-[#1a2f5e] text-white">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-1">
+                      <p className="text-white text-xs font-bold uppercase tracking-widest mb-1">
                         Total Anual a Pagar
                       </p>
                       <p className="font-display font-extrabold text-2xl">
@@ -372,11 +372,11 @@ export default function IucSimulator() {
                           : formatCurrency(result.total)}
                       </p>
                       {result.isExempt && result.exemptReason && (
-                          <p className="text-white/80 text-sm mt-1">{result.exemptReason}</p>
+                          <p className="text-white/90 text-sm mt-1">{result.exemptReason}</p>
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="text-white/40 text-xs">Versão: {result.version}</p>
+                      <p className="text-white/60 text-xs">Versão: {result.version}</p>
                     </div>
                   </div>
                 </div>
@@ -404,12 +404,6 @@ export default function IucSimulator() {
                           <span className="font-semibold">{formatCurrency(result.additionalCo2)}</span>
                         </div>
                       )}
-                      {result.registrationYearCoefficient !== 1.0 && (
-                        <div className="flex justify-between items-center text-sm">
-                          <span>Coeficiente Ano</span>
-                          <span className="font-semibold">x{result.registrationYearCoefficient}</span>
-                        </div>
-                      )}
                       {result.fuelSurcharge > 0 && (
                         <div className="flex justify-between items-center text-sm text-red-600">
                           <span>Agravamento Combustível</span>
@@ -417,9 +411,15 @@ export default function IucSimulator() {
                         </div>
                       )}
                       <div className="flex justify-between items-center text-sm border-t border-gray-200 pt-3">
-                        <span>Subtotal</span>
+                        <span>Subtotal (Componentes)</span>
                         <span className="font-semibold">{formatCurrency(result.subtotal)}</span>
                       </div>
+                      {result.registrationYearCoefficient !== 1.0 && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span>Coeficiente Ano</span>
+                          <span className="font-semibold">x{result.registrationYearCoefficient}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center text-sm font-bold border-t border-gray-200 pt-3">
                         <span>Total</span>
                         <span className="font-bold">{formatCurrency(result.total)}</span>

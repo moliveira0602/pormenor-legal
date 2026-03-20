@@ -491,10 +491,11 @@ export function calculateIucCars2026(input: IucInput): IucBreakdown {
     }
   }
 
-  subtotal = (engineComponent + co2Component + additionalCo2 + fuelSurcharge) * registrationYearCoefficient;
+  // 8. Calculate subtotal (components without coefficients)
+  subtotal = engineComponent + co2Component + additionalCo2 + fuelSurcharge;
 
-  // 9. Calculate Final Total
-  total = subtotal;
+  // 9. Calculate Final Total (apply registration year coefficient)
+  total = subtotal * registrationYearCoefficient;
   total = Math.max(0, total);
 
   return {
