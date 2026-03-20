@@ -1,23 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { calculateIuc, IucInput, IucBreakdown, IucCategory, FuelType, VehicleType } from "../lib/isv";
+import { calculateIuc, IucInput, IucBreakdown, IucCategory, FuelType, VehicleType, MeasurementCycle } from "../lib/isv";
 
 // Initial form state for IUC
 const INITIAL_FORM: IucInput = {
-  category: "A",
-  vehicleType: "carro",
-  fuel: "diesel",
+  originRegion: "eu_eea",
+  firstRegistrationDate: new Date(),
+  measurementCycle: "NEDC",
+  fuelType: "gasolina",
+  engineCc: 0,
+  co2: 0,
   year: new Date().getFullYear(),
   month: 1,
   day: 1,
-  cc: 0,
-  co2: 0,
-  origin: "national",
-  country: "portugal",
-  yearRange: "pre_2007",
-  registrationDate: new Date(),
-  isImported: false,
+  category: "A",
+  vehicleType: "carro",
 };
 
 export default function IucSimulator() {
@@ -26,6 +24,31 @@ export default function IucSimulator() {
   const [error, setError] = useState("");
   const [dateStr, setDateStr] = useState(`${new Date().getFullYear()}-01-01`); // Initial date
   const [consent, setConsent] = useState(false);
+  const [matriculaOption, setMatriculaOption] = useState<string>("");
+  const [isExemptModalOpen, setIsExemptModalOpen] = useState(false);
+
+  const handleMatriculaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setMatriculaOption(value);
+    
+    // Reset dependent select
+    setForm(prev => ({ 
+      ...prev, 
+      measurementCycle: "NEDC" as MeasurementCycle,
+      year: new Date().getFullYear(),
+      month: 1,
+      day: 1
+    }));
+    setResult(null);
+    setError("");
+    
+    // Handle exemption for vehicles up to 1980
+    if (value === "pre_1980") {
+      setIsExemptModalOpen(true);
+    } else {
+      setIsExemptModalOpen(false);
+    }
+  };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -44,7 +67,7 @@ export default function IucSimulator() {
       const value =
         e.target instanceof HTMLInputElement && e.target.type === "checkbox"
           ? e.target.checked
-          : e.target.type === "number" || field === "year" || field === "month" || field === "cc" || field === "co2"
+          : e.target.type === "number" || field === "year" || field === "month" || field === "engineCc" || field === "co2"
           ? Number(e.target.value)
           : e.target.value;
       
@@ -53,9 +76,17 @@ export default function IucSimulator() {
       setError("");
     };
 
+  // Função especial para handle do select de ciclo que define automaticamente o tipo de ciclo
+  const handleCycleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value as MeasurementCycle;
+    setForm(prev => ({ ...prev, measurementCycle: value }));
+    setResult(null);
+    setError("");
+  };
+
   const handleCalculate = () => {
     // Basic validation
-    if (!form.cc || !form.year) {
+    if (!form.engineCc || !form.year) {
       setError("Por favor preencha os campos obrigatórios (Ano, Cilindrada).");
       return;
     }
@@ -74,10 +105,30 @@ export default function IucSimulator() {
       return;
     }
 
-    // Validate CO2 for categories that require it
-    if (form.category === "B" || form.category === "C" || form.category === "D") {
+    // Validate CO2 for category B (only category that requires CO2 in current implementation)
+    if (form.category === "B") {
       if (!form.co2 || form.co2 <= 0) {
         setError("CO2 obrigatório para esta categoria de veículo.");
+        return;
+      }
+    }
+
+    // Validate consistency between matriculaOption and measurementCycle
+    if (matriculaOption === "1981_2007" && form.measurementCycle !== "NEDC") {
+      setError("Para veículos de 1981 a 2007, o ciclo deve ser NEDC.");
+      return;
+    }
+
+    if (matriculaOption === "2007_2026") {
+      // Validate year consistency for 2007
+      if (form.measurementCycle === "NEDC" && form.year === 2007 && form.month < 7) {
+        setError("Para 2007, selecione 'Julho a Dezembro 2007' para NEDC ou '2017 a 2026 WLTP' para WLTP.");
+        return;
+      }
+      
+      // Validate that WLTP is only for 2017+
+      if (form.measurementCycle === "WLTP" && form.year < 2017) {
+        setError("WLTP só é válido para veículos a partir de 2017.");
         return;
       }
     }
@@ -134,34 +185,34 @@ export default function IucSimulator() {
               </select>
             </div>
 
-            {/* País da matrícula */}
+            {/* País de origem */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-navy uppercase tracking-wider">
-                  País da matrícula
+                  País de origem
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <label className="flex items-center gap-3 p-3 border border-[var(--border)] rounded-lg cursor-pointer hover:bg-gray-50">
                     <input
                       type="radio"
-                      name="origin"
-                      value="national"
-                      checked={form.origin === "national"}
-                      onChange={handleChange("origin")}
+                      name="originRegion"
+                      value="eu_eea"
+                      checked={form.originRegion === "eu_eea"}
+                      onChange={handleChange("originRegion")}
                       className="text-primary focus:ring-primary"
                     />
-                    <span className="text-sm">Nacional</span>
+                    <span className="text-sm">Portugal/UE/EEE</span>
                   </label>
                   <label className="flex items-center gap-3 p-3 border border-[var(--border)] rounded-lg cursor-pointer hover:bg-gray-50">
                     <input
                       type="radio"
-                      name="origin"
-                      value="foreign"
-                      checked={form.origin === "foreign"}
-                      onChange={handleChange("origin")}
+                      name="originRegion"
+                      value="third_country"
+                      checked={form.originRegion === "third_country"}
+                      onChange={handleChange("originRegion")}
                       className="text-primary focus:ring-primary"
                     />
-                    <span className="text-sm">Estrangeira</span>
+                    <span className="text-sm">Outro país</span>
                   </label>
                 </div>
               </div>
@@ -171,15 +222,44 @@ export default function IucSimulator() {
                 <label className="text-xs font-bold text-navy uppercase tracking-wider">
                   Data da primeira matrícula
                 </label>
-                <input
-                  className={inputClass}
-                  type="date"
-                  value={dateStr}
-                  onChange={handleDateChange}
-                  max={new Date().toISOString().split('T')[0]}
-                />
+                <select className={inputClass} value={matriculaOption} onChange={handleMatriculaChange}>
+                  <option value="">Selecione</option>
+                  <option value="pre_1980">Até 1980</option>
+                  <option value="1981_2007">De 1981 a 2007</option>
+                  <option value="2007_2026">De 2007 a 2026</option>
+                </select>
               </div>
             </div>
+
+            {/* Ano e ciclo de medição - Condicional baseado na data da primeira matrícula */}
+            {matriculaOption === "1981_2007" && (
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-navy uppercase tracking-wider">
+                  Ano e ciclo de medição
+                </label>
+                <select className={inputClass} value={form.measurementCycle} onChange={handleChange("measurementCycle")}>
+                  <option value="NEDC">1981 a 1989 (NEDC)</option>
+                  <option value="NEDC">1990 a 1995 (NEDC)</option>
+                  <option value="NEDC">1996 a Junho 2007 (NEDC)</option>
+                </select>
+              </div>
+            )}
+
+            {matriculaOption === "2007_2026" && (
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-navy uppercase tracking-wider">
+                  Ano e ciclo de medição
+                </label>
+                <select className={inputClass} value={form.measurementCycle} onChange={handleChange("measurementCycle")}>
+                  <option value="NEDC">Julho a Dezembro 2007 (NEDC)</option>
+                  <option value="NEDC">2008 (NEDC)</option>
+                  <option value="NEDC">2009 (NEDC)</option>
+                  <option value="NEDC">2010 a 2016 (NEDC)</option>
+                  <option value="NEDC">2017 a 2019 NEDC</option>
+                  <option value="WLTP">2017 a 2026 WLTP</option>
+                </select>
+              </div>
+            )}
 
             {/* Categoria e Tipo de combustível */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -200,12 +280,9 @@ export default function IucSimulator() {
                 <label className="text-xs font-bold text-navy uppercase tracking-wider">
                   Tipo de combustível
                 </label>
-                <select className={inputClass} value={form.fuel} onChange={handleChange("fuel")}>
+                <select className={inputClass} value={form.fuelType} onChange={handleChange("fuelType")}>
                   <option value="gasolina">Gasolina</option>
-                  <option value="diesel">Diesel</option>
-                  <option value="eletrico">Elétrico</option>
-                  <option value="hibrido">Híbrido</option>
-                  <option value="gpl">GPL/Gás Natural</option>
+                  <option value="gasoleo">Gasóleo</option>
                 </select>
               </div>
             </div>
@@ -220,8 +297,8 @@ export default function IucSimulator() {
                   className={inputClass}
                   type="number"
                   placeholder="Ex: 1995"
-                  value={form.cc || ""}
-                  onChange={handleChange("cc")}
+                  value={form.engineCc || ""}
+                  onChange={handleChange("engineCc")}
                 />
               </div>
 
@@ -363,11 +440,49 @@ export default function IucSimulator() {
                     setForm(INITIAL_FORM);
                     setDateStr(`${new Date().getFullYear()}-01-01`);
                     setConsent(false);
+                    setMatriculaOption("");
                   }}
                   className="px-6 h-[40px] bg-gray-200 hover:bg-gray-300 text-navy rounded-lg font-display font-bold text-sm transition-all"
                 >
                   Nova Simulação
                 </button>
+              </div>
+            )}
+
+            {/* Modal de Isenção para veículos até 1980 */}
+            {isExemptModalOpen && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full border border-[var(--border)] shadow-xl">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="material-symbols-outlined text-2xl text-green-600">check_circle</span>
+                    </div>
+                    <h3 className="font-display font-bold text-navy text-xl mb-2">Veículo Isento</h3>
+                    <p className="text-muted mb-6">
+                      Veículos com data de primeira matrícula até 1980 são isentos do pagamento do IUC.
+                    </p>
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => {
+                          setIsExemptModalOpen(false);
+                          setMatriculaOption("");
+                          setForm(INITIAL_FORM);
+                          setDateStr(`${new Date().getFullYear()}-01-01`);
+                          setConsent(false);
+                        }}
+                        className="w-full h-[46px] bg-navy hover:bg-primary text-white font-display font-bold text-sm rounded-lg transition-all"
+                      >
+                        Nova Simulação
+                      </button>
+                      <button
+                        onClick={() => setIsExemptModalOpen(false)}
+                        className="w-full h-[46px] bg-gray-200 hover:bg-gray-300 text-navy font-display font-bold text-sm rounded-lg transition-all"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </form>

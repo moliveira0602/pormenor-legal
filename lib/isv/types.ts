@@ -6,7 +6,7 @@ export type HybridKind = "mhev" | "hev" | "phev"; // Mild, Full, Plug-in
 export type VehicleCondition = "novo" | "usado";
 
 // Tipos específicos para IUC 2026
-export type IucCategory = "A" | "B" | "C" | "D" | "E";
+export type IucCategory = "A" | "B";
 export type VehicleType = "carro" | "moto" | "ciclomotor" | "triciclo" | "quadriciclo" | "mercadorias_ligeiro" | "mercadorias_pesado";
 
 export interface IsvInput {
@@ -93,20 +93,23 @@ export interface IsvTables {
 }
 
 // Tipos para IUC (Autodoc-style)
+export type OriginRegion = "eu_eea" | "third_country";
+export type MeasurementCycle = "NEDC" | "WLTP";
+export type FuelType2026 = "gasolina" | "gasoleo";
+
 export interface IucInput {
-  country: "portugal" | "eu" | "eea" | "other"; // País de origem
-  yearRange: "pre_2007" | "2007_2018" | "post_2018"; // Intervalo de anos (WLTP/NEDC)
-  registrationDate: Date; // Data da primeira matrícula
-  cc: number; // Cilindrada em cm³
+  originRegion: OriginRegion; // Região de origem
+  firstRegistrationDate: Date; // Data da primeira matrícula
+  portugueseRegistrationDate?: Date; // Data da matrícula em Portugal (para veículos importados)
+  measurementCycle: MeasurementCycle; // Ciclo de medição
+  fuelType: FuelType2026; // Tipo de combustível
+  engineCc: number; // Cilindrada em cm³
   co2: number; // Emissões CO2 em g/km
-  fuel: "diesel" | "gasolina" | "hibrido" | "eletrico" | "gpl"; // Tipo de combustível
-  category: "A" | "B" | "C" | "D" | "E"; // Categoria do veículo
-  isImported: boolean; // Veículo importado
   year: number;
   month: number;
   day: number;
-  origin: "national" | "foreign";
-  vehicleType: VehicleType;
+  category: "A" | "B"; // Apenas categorias A e B para carros de passageiros
+  vehicleType: "carro"; // Apenas carros de passageiros
 }
 
 export interface IucBreakdown {
