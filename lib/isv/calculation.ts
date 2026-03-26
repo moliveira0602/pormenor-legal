@@ -238,7 +238,8 @@ export function calculateIuc(input: IucInput): IucBreakdown {
       throw new Error("CO2 obrigatório para esta categoria de veículo");
     }
 
-    const co2Rate = categoryTable.co2Rates?.find(
+    const co2Rates = "co2Rates" in categoryTable ? categoryTable.co2Rates : undefined;
+    const co2Rate = co2Rates?.find(
       (r: any) => input.co2 >= r.minCo2 && input.co2 <= r.maxCo2
     );
     if (!co2Rate) {
