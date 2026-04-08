@@ -5,10 +5,10 @@ interface Stat {
 }
 
 const stats: Stat[] = [
-  { icon: "emoji_events", value: "4.575", label: "Veículos legalizados" },
-  { icon: "home_repair_service", value: "17", label: "Serviços disponíveis" },
-  { icon: "groups", value: "4.478", label: "Clientes satisfeitos" },
-  { icon: "location_on", value: "Fafe", label: "Atendimento presencial" },
+  { icon: "emoji_events", value: "+45.000", label: "Veículos Legalizados" },
+  { icon: "home_repair_service", value: "20 anos", label: "de experiência" },
+  { icon: "groups", value: "+15.000", label: "Clientes Satisfeitos" },
+  { icon: "location_on", value: "Fafe", label: "Atendimento presencial e online" },
 ];
 
 export default function StatsBar() {

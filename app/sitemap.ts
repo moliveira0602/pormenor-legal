@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/pedido-de-coc',
     '/servicos-imt',
     '/simulador-isv',
+    '/simulador-iuc',
     '/importar-carro',
     '/politica-de-privacidade',
     '/termos-e-condicoes',

@@ -39,7 +39,7 @@ export default function Hero() {
               href="#contacts"
               className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-7 py-4 rounded-xl font-display font-bold text-base transition-all shadow-xl shadow-primary/30 hover:-translate-y-0.5"
             >
-              Contactar
+              Solicitar Legalização Automóvel
               <span className="material-symbols-outlined text-[18px]">
                 arrow_forward
               </span>
@@ -49,7 +49,7 @@ export default function Hero() {
               href="#services"
               className="inline-flex items-center bg-white/10 hover:bg-white/15 border border-white/20 text-white px-7 py-4 rounded-xl font-display font-bold text-base transition-all"
             >
-              Ver Serviços
+              Pedido COC
             </a>
           </div>
         </div>
@@ -74,9 +74,9 @@ export default function Hero() {
             </div>
             <div>
               <strong className="font-display font-extrabold text-navy text-xl block">
-                +500
+                +45.000
               </strong>
-              <span className="text-muted text-xs">Carros Legalizados</span>
+              <span className="text-muted text-xs">Veículos Legalizados</span>
             </div>
           </div>
 
@@ -88,7 +88,7 @@ export default function Hero() {
             </div>
             <div>
               <strong className="font-display font-extrabold text-navy text-xl block">
-                5–15 dias
+                3–21 dias úteis
               </strong>
               <span className="text-muted text-xs">Prazo médio do COC</span>
             </div>

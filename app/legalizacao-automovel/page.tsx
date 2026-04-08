@@ -41,6 +41,9 @@ export default function LegalizacaoAutomovel() {
             <a href="/pedido-de-coc" className="bg-white/10 hover:bg-white/15 border border-white/20 text-white px-6 py-3 rounded-xl font-display font-bold no-underline">
               Pedido de COC
             </a>
+            <a href="/simulador-isv" className="bg-white/10 hover:bg-white/15 border border-white/20 text-white px-6 py-3 rounded-xl font-display font-bold no-underline">
+              Meu Veículo
+            </a>
           </div>
         </div>
       </section>
@@ -50,28 +53,8 @@ export default function LegalizacaoAutomovel() {
           <div className="md:col-span-2 space-y-8">
             <div>
               <h2 className="font-display font-extrabold text-navy text-2xl mb-2">
-                O que fazemos
-              </h2>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-muted">
-                <li className="bg-[var(--navy-mid)]/5 border border-[var(--border)] rounded-xl p-4">
-                  Legalização de veículos importados (ligeiros, pesados, motociclos, reboques, semi‑reboques)
-                </li>
-                <li className="bg-[var(--navy-mid)]/5 border border-[var(--border)] rounded-xl p-4">
-                  Benefícios fiscais: transferência de residência, famílias numerosas, pessoas com deficiência, táxis
-                </li>
-                <li className="bg-[var(--navy-mid)]/5 border border-[var(--border)] rounded-xl p-4">
-                  Processo de alteração de categoria fiscal
-                </li>
-                <li className="bg-[var(--navy-mid)]/5 border border-[var(--border)] rounded-xl p-4">
-                  Reconstrução de documentação e reativação de processos inacabados
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-display font-bold text-navy text-xl mb-3">
                 Serviços Prestados
-              </h3>
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {assuntos.map((assunto) => (
                   <a

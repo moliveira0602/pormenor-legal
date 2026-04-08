@@ -25,9 +25,9 @@ const services: Service[] = [
   },
   {
     icon: "description",
-    title: "COC e Homologação",
+    title: "Declarações Técnicas",
     description:
-      "Obtenção do Certificado de Conformidade e número de homologação nacional.",
+      "Obtenção de declarações técnicas para o seu veículo.",
   },
   {
     icon: "savings",

@@ -52,6 +52,39 @@ export default function Footer({ showContacts = true }: { showContacts?: boolean
     setError("");
 
     const formData = new FormData(e.currentTarget);
+
+    // Collect file attachments
+    const fileInputs = e.currentTarget.querySelectorAll('input[type="file"]');
+    const attachments = Array.from(fileInputs)
+      .flatMap(input => Array.from(input.files || []))
+      .filter(file => file.size > 0); // Filter out empty files
+
+    // Convert files to base64 for JSON transmission
+    const attachmentPromises = attachments.map(file =>
+      new Promise<string | null>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      })
+    );
+
+    try {
+      // Wait for all files to be converted to base64
+      const attachmentResults = await Promise.all(attachmentPromises);
+      const attachmentData = attachmentResults
+        .map((result, index) => ({
+          name: attachments[index]?.name || `file_${index}`,
+          type: attachments[index]?.type || 'application/octet-stream',
+          data: result // base64 encoded
+        }))
+        .filter(att => att.data !== null); // Remove failed conversions
+    } catch (err) {
+      setError("Ocorreu um erro ao processar os ficheiros anexados.");
+      setIsSubmitting(false);
+      return; // Exit early if file processing fails
+    }
+
     const data = {
       name: formData.get("nome"),
       email: formData.get("email"),
@@ -59,6 +92,7 @@ export default function Footer({ showContacts = true }: { showContacts?: boolean
       subject: formData.get("assunto"),
       vin: formData.get("vin"),
       message: formData.get("mensagem"),
+      attachments: attachmentData
     };
 
     try {
@@ -236,6 +270,24 @@ export default function Footer({ showContacts = true }: { showContacts?: boolean
                       rows={6}
                     />
                   </div>
+
+                  {/* Campo de upload de ficheiros */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-white/75">
+                      Anexar ficheiros
+                    </label>
+                    <input
+                      type="file"
+                      name="attachments"
+                      className="w-full text-sm text-white/50 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-white/10 file:text-white hover:file:bg-white/20"
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.zip"
+                      multiple
+                    />
+                    <p className="text-xs text-white/40 mt-1">
+                      Formatos aceitos: PDF, JPG, PNG, DOC, DOCX, ZIP (máx. 10MB por ficheiro)
+                    </p>
+                  </div>
+
                   <div className="flex items-start">
                     <div className="flex items-center h-5">
                       <input

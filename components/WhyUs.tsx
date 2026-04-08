@@ -6,7 +6,7 @@ interface Card {
 }
 
 const cards: Card[] = [
-  { icon: "history_edu", title: "Experiência", desc: "Mais de 10 anos no mercado automóvel português." },
+  { icon: "history_edu", title: "Experiência", desc: "Mais de 20 anos no mercado automóvel português." },
   { icon: "support_agent", title: "Apoio Total", desc: "Acompanhamento personalizado em cada fase do processo.", featured: true },
   { icon: "bolt", title: "Rapidez", desc: "Processos concluídos em tempo recorde no mercado." },
   { icon: "gavel", title: "Especialização", desc: "Conhecimento profundo das leis fiscais e aduaneiras." },

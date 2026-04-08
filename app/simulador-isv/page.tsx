@@ -1,4 +1,4 @@
-import IsvSimulator from "@/components/IsvSimulator";
+import IsvSimulatorNew from "@/components/IsvSimulatorNew";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
@@ -61,8 +61,8 @@ export default function SimuladorISVPage() {
       </section>
 
       {/* Simulator Component */}
-      <div className="-mt-8 relative z-10">
-        <IsvSimulator />
+      <div className="mt-12">
+        <IsvSimulatorNew />
       </div>
 
       {/* Content Section */}
