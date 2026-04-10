@@ -41,7 +41,7 @@ export default function PedidoDeCOC() {
     const formData = new FormData(e.currentTarget);
 
     // Collect file attachments
-    const fileInputs = e.currentTarget.querySelectorAll('input[type="file"]');
+    const fileInputs = e.currentTarget.querySelectorAll('input[type="file"]') as NodeListOf<HTMLInputElement>;
     const attachments = Array.from(fileInputs)
       .flatMap(input => Array.from(input.files || []))
       .filter(file => file.size > 0); // Filter out empty files
@@ -56,18 +56,25 @@ export default function PedidoDeCOC() {
       })
     );
 
+    let attachmentData: Array<{name: string; type: string; data: string}> = [];
+
     try {
       // Wait for all files to be converted to base64
       const attachmentResults = await Promise.all(attachmentPromises);
-      const attachmentData = attachmentResults
+      attachmentData = attachmentResults
         .map((result, index) => ({
-          name: attachments[index]?.name || `file_${index}`,
-          type: attachments[index]?.type || 'application/octet-stream',
+          name: (attachments[index]?.name ?? `file_${index}`),
+          type: (attachments[index]?.type ?? 'application/octet-stream'),
           data: result // base64 encoded
         }))
-        .filter(att => att.data !== null); // Remove failed conversions
+        .filter((att): att is {name: string; type: string; data: string} => att.data !== null); // Remove failed conversions
+    } catch (err) {
+      setError("Ocorreu um erro ao processar os ficheiros anexados.");
+      setIsSubmitting(false);
+      return;
+    }
 
-      const data = {
+    const data = {
         name: formData.get("name"),
         email: formData.get("email"),
         phone: formData.get("phone"),
@@ -77,8 +84,9 @@ export default function PedidoDeCOC() {
         brand: selectedBrand?.name || formData.get("brand"),
         subject: "Pedido de COC",
         attachments: attachmentData
-      };
+    };
 
+    try {
       const response = await fetch("/send-mail.php", {
         method: "POST",
         headers: {
