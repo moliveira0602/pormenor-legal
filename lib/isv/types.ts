@@ -1,70 +1,70 @@
-export type FuelType = "diesel" | "gasolina" | "hibrido" | "eletrico" | "gpl";
-export type Origin = "eu" | "noneu";
-export type VehicleCategory = "M1" | "N1";
+// ISV Types — aligned with ISV 2026 tables
+export type FuelType = "gasolina" | "gasoleo" | "hibrido" | "hibrido_plugin" | "gn" | "gpl";
+export type Origin = "ue" | "terceiro";
 export type Cycle = "NEDC" | "WLTP";
-export type HybridKind = "mhev" | "hev" | "phev"; // Mild, Full, Plug-in
 export type VehicleCondition = "novo" | "usado";
+export type ParticleFilter = "euro6d" | "euro6dtemp" | "euro6c" | "euro6b" | "euro6a" | "euro5" | "sem_norma" | "desconhecido";
+export type CommercialSubtype = "furgao_2lug" | "furgao_mercadorias" | "furgao_misto" | "caixa_aberta" | "cabine_dupla" | "cabine_dupla_4x4";
 
-// Tipos específicos para IUC 2026
-export type IucCategory = "A" | "B" | "C" | "D" | "E";
-export type VehicleType = "carro" | "moto" | "ciclomotor" | "triciclo" | "quadriciclo" | "mercadorias_ligeiro" | "mercadorias_pesado";
+export type VehicleType =
+  | "passageiros"
+  | "comercial"
+  | "autocaravana"
+  | "moto"
+  | "eletrico"
+  | "anterior1970";
 
 export interface IsvInput {
-  fuel: FuelType;
+  vehicleType: VehicleType;
+  commercialSubtype?: CommercialSubtype;
+  origin: Origin;
   condition: VehicleCondition;
   year: number;
   month: number;
   day: number;
   cc: number;
   co2: number;
-  particles?: number; // In g/km (for diesel surcharge)
-  origin: Origin;
-  category: VehicleCategory;
+  fuel: FuelType;
   cycle: Cycle;
-  hybridKind?: HybridKind;
-  electricRange?: number; // In km (for PHEV eligibility)
+  particles?: ParticleFilter;
+  electricRange?: number;
   transferResidence?: boolean;
   disability?: boolean;
-  taxi?: boolean;
-  largeFamily?: boolean;
 }
 
 export interface IsvBreakdown {
-  cc: {
-    base: number;
-    deduction: number;
-    subtotal: number;
-  };
-  co2: {
-    base: number;
-    deduction: number;
-    subtotal: number;
-  };
+  // Raw components
+  ccComponent: number;
+  ccApplyPercent: number;
+  co2Component: number;
+  co2ApplyPercent: number;
+  
+  // Taxable base
+  taxableBase: number;
+  
+  // After applying % from table
+  totalAfterPercent: number;
+  
+  // After age reduction
+  ageDiscountCc: number;
+  ageDiscountCo2: number;
+  ageDiscountTotal: number;
+  
+  // Final
   dieselSurcharge: number;
-  ageReduction: {
-    years: number;
-    percent: number;
-    amount: number;
-  };
-  hybridReduction: {
-    percent: number;
-    amount: number;
-  };
-  specialReductions: {
-    percent: number; // For disability, taxi, etc.
-    amount: number;
-  };
-  totalBeforeReductions: number;
   finalTotal: number;
+  
+  // Metadata
   isExempt: boolean;
   exemptReason?: string;
   version: string;
 }
 
 export interface IsvTableEntry {
-  limit: number; // Upper limit of the bracket (Infinity for last)
+  limit: number;
   rate: number;
   deductible: number;
+  applyPercent: number;
 }
 
 export interface AgeReductionEntry {
@@ -74,84 +74,19 @@ export interface AgeReductionEntry {
 }
 
 export interface IsvTables {
-  cc: IsvTableEntry[];
+  ccPassageiros: IsvTableEntry[];
+  ccMercadorias: IsvTableEntry[];
+  ccMotos: IsvTableEntry[];
   co2: {
     gasolina: {
       nedc: IsvTableEntry[];
       wltp: IsvTableEntry[];
     };
-    diesel: {
+    gasoleo: {
       nedc: IsvTableEntry[];
       wltp: IsvTableEntry[];
     };
   };
   ageReduction: AgeReductionEntry[];
-  dieselSurcharge: {
-    threshold: number;
-    amount: number;
-  };
-}
-
-export interface IucInput {
-  category: IucCategory;
-  vehicleType: VehicleType;
-  fuel: FuelType;
-  year: number;
-  month: number;
-  day: number;
-  cc: number;
-  co2: number;
-  co2Standard: "NEDC" | "WLTP";
-  origin: "national" | "foreign";
-  registrationDate?: Date;
-}
-
-export interface IucBreakdown {
-  category: IucCategory;
-  vehicleType: VehicleType;
-  engineComponent: number;
-  co2Component: number;
-  dieselExtra: number;
-  subtotal: number;
-  total: number;
-  isExempt: boolean;
-  exemptReason?: string;
-  version: string;
-}
-
-// Estrutura para tabelas IUC por categoria
-export interface IucCategoryTable {
-  baseRates: Array<{
-    minCc: number;
-    maxCc: number;
-    rate: number;
-  }>;
-  co2Rates?: Array<{
-    minCo2: number;
-    maxCo2: number;
-    rate: number;
-  }>;
-  dieselSurcharge?: Array<{
-    minCc: number;
-    maxCc: number;
-    surcharge: number;
-  }>;
-}
-
-export interface IucTables2026 {
-  categories: {
-    A: IucCategoryTable;
-    B: IucCategoryTable;
-    C: IucCategoryTable;
-    D: IucCategoryTable;
-    E: IucCategoryTable;
-  };
-  ageReduction: Array<{
-    minYears: number;
-    maxYears: number;
-    percent: number;
-  }>;
-  electricDiscount: {
-    percent: number;
-  };
+  ageReductionCo2: AgeReductionEntry[];
 }

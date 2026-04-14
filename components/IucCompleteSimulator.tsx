@@ -178,7 +178,7 @@ export default function IucCompleteSimulator() {
                     >
                       {yearOptions.map(year => (
                         <option key={year} value={year}>
-                          {year}
+                          {String(year)}
                         </option>
                       ))}
                     </select>
@@ -194,9 +194,9 @@ export default function IucCompleteSimulator() {
                   value={engineCC}
                   onChange={(e) => setEngineCC(Number(e.target.value))}
                 >
-                  {COMMON_ENGINE_CC.map(cc => (
-                    <option key={cc} value={cc}>
-                      {cc.toLocaleString()} cm³
+                  {COMMON_ENGINE_CC.map((cc) => (
+                    <option key={String(cc)} value={String(cc)}>
+                      {String(cc)} cm³
                     </option>
                   ))}
                 </select>
@@ -211,9 +211,9 @@ export default function IucCompleteSimulator() {
                     value={co2Emissions}
                     onChange={(e) => setCo2Emissions(Number(e.target.value))}
                   >
-                    {COMMON_CO2_EMISSIONS.map(co2 => (
-                      <option key={co2} value={co2}>
-                        {co2} g/km
+                    {COMMON_CO2_EMISSIONS.map((co2) => (
+                      <option key={String(co2)} value={String(co2)}>
+                        {String(co2)} g/km
                       </option>
                     ))}
                   </select>
