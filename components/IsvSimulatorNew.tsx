@@ -88,17 +88,58 @@ export default function IsvSimulatorNew() {
   const lbl = "block text-sm font-semibold text-gray-700 mb-1";
   const card = "bg-white rounded-xl border border-gray-200 p-6 shadow-sm";
 
-  let n = 0;
-  const nf = () => { n++; return n; };
-
   return (
     <div className="max-w-5xl mx-auto py-8 px-4">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-          {/* 1. Tipo de Veículo */}
+        {/* Linha 1: Origem - Estado - Data (33% cada) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* 1. Origem */}
           <div className={card}>
-            <label className={lbl}>{nf()}. Tipo de Veículo</label>
+            <label className={lbl}>1. Origem</label>
+            <select className={sel} value={form.origin} onChange={e => update("origin", e.target.value)} required>
+              <option value="ue">União Europeia (UE/EEE)</option>
+              <option value="terceiro">País Terceiro (fora da UE)</option>
+            </select>
+          </div>
+
+          {/* 2. Estado do Veículo (só UE) */}
+          {showCond && (
+            <div className={card}>
+              <label className={lbl}>2. Estado do Veículo</label>
+              <select className={sel} value={form.condition} onChange={e => update("condition", e.target.value)}>
+                <option value="usado">Usado</option>
+                <option value="novo">Novo</option>
+              </select>
+            </div>
+          )}
+
+          {/* 3. Data de Matrícula */}
+          <div className={card}>
+            <label className={lbl}>3. Data de Registo</label>
+            <div className="flex gap-1">
+              <select className={`${sel} text-xs`} value={form.day || ""}
+                onChange={e => update("day", Number(e.target.value))} required>
+                <option value="">Dia</option>
+                {DIAS.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+              <select className={`${sel} text-xs`} value={form.month || ""}
+                onChange={e => update("month", Number(e.target.value))} required>
+                <option value="">Mês</option>
+                {MESES.map(m => <option key={m.value} value={m.value}>{m.label.slice(0,3)}</option>)}
+              </select>
+              <select className={`${sel} text-xs`} value={form.year || ""}
+                onChange={e => update("year", Number(e.target.value))} required>
+                <option value="">Ano</option>
+                {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Linha 2: Tipo de Veículo (largura full) */}
+        <div className="grid grid-cols-1 gap-4">
+          <div className={card}>
+            <label className={lbl}>4. Tipo de Veículo</label>
             <select className={sel} value={form.vehicleType} onChange={e => update("vehicleType", e.target.value)} required>
               <option value="passageiros">Ligeiro de Passageiros / Misto</option>
               <option value="comercial">Comercial / Ligeiro de Mercadorias</option>
@@ -109,7 +150,7 @@ export default function IsvSimulatorNew() {
             </select>
           </div>
 
-          {/* 1b. Sub-tipo Comercial */}
+          {/* Sub-tipo Comercial */}
           {showCommercialSub && (
             <div className={card}>
               <label className={lbl}>Sub-tipo Comercial</label>
@@ -121,52 +162,13 @@ export default function IsvSimulatorNew() {
               </select>
             </div>
           )}
+        </div>
 
-          {/* 2. Origem */}
-          <div className={card}>
-            <label className={lbl}>{showCommercialSub ? "3" : "2"}. Origem</label>
-            <select className={sel} value={form.origin} onChange={e => update("origin", e.target.value)} required>
-              <option value="ue">União Europeia (UE/EEE)</option>
-              <option value="terceiro">País Terceiro (fora da UE)</option>
-            </select>
-          </div>
-
-          {/* 3. Estado do Veículo (só UE) */}
-          {showCond && (
-            <div className={card}>
-              <label className={lbl}>Estado do Veículo</label>
-              <select className={sel} value={form.condition} onChange={e => update("condition", e.target.value)}>
-                <option value="usado">Usado</option>
-                <option value="novo">Novo</option>
-              </select>
-            </div>
-          )}
-
-          {/* 4. Data de Matrícula — 3 selects individuais: dia / mês / ano */}
-          <div className={card}>
-            <label className={lbl}>Data de Matrícula</label>
-            <div className="flex gap-2">
-              <select className={sel} value={form.day || ""}
-                onChange={e => update("day", Number(e.target.value))} required>
-                <option value="">Dia</option>
-                {DIAS.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-              <select className={sel} value={form.month || ""}
-                onChange={e => update("month", Number(e.target.value))} required>
-                <option value="">Mês</option>
-                {MESES.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-              </select>
-              <select className={sel} value={form.year || ""}
-                onChange={e => update("year", Number(e.target.value))} required>
-                <option value="">Ano</option>
-                {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </div>
-          </div>
-
+        {/* Linha 3: Cilindrada - Combustível - Partículas */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* 5. Cilindrada */}
           <div className={card}>
-            <label className={lbl}>Cilindrada (cm³)</label>
+            <label className={lbl}>5. Cilindrada (cm³)</label>
             <input type="number" className={inp} value={form.cc || ""}
               onChange={e => update("cc", Number(e.target.value))}
               min="0" step="1" required placeholder="Ex: 2995" />
@@ -174,7 +176,7 @@ export default function IsvSimulatorNew() {
 
           {/* 6. Combustível */}
           <div className={card}>
-            <label className={lbl}>Combustível</label>
+            <label className={lbl}>6. Combustível</label>
             <select className={sel} value={form.fuel} onChange={e => update("fuel", e.target.value)} required>
               {Object.entries(FUEL_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
@@ -182,50 +184,51 @@ export default function IsvSimulatorNew() {
             </select>
           </div>
 
-          {/* 6b. Autonomia Elétrica */}
-          {showElecRange && (
-            <div className={card}>
-              <label className={lbl}>Autonomia Elétrica Mínima (km)</label>
-              <input type="number" className={inp} value={form.electricRange || ""}
-                onChange={e => update("electricRange", Number(e.target.value) || undefined)}
-                min="0" max="200" step="1" placeholder="Ex: 50" />
-            </div>
-          )}
-
           {/* 7. Partículas (só gasóleo) */}
-          {showParticles && (
+          {showParticles ? (
             <div className={card}>
-              <label className={lbl}>Partículas Diesel</label>
+              <label className={lbl}>7. Partículas Diesel</label>
               <select className={sel} value={form.particles || "desconhecido"}
                 onChange={e => update("particles", e.target.value)}>
-                <option value="sem_filtro">Sem filtro (&lt;0,001 g/km)</option>
-                <option value="com_filtro">Com filtro (≥0,001 g/km)</option>
-                <option value="desconhecido">Desconhecido → aplica agravamento</option>
+                <option value="euro6d">Euro 6d (0€)</option>
+                <option value="euro6dtemp">Euro 6d-temp (0€)</option>
+                <option value="euro6c">Euro 6c (500€)</option>
+                <option value="euro6b">Euro 6b ou inferior (1000€)</option>
+                <option value="sem_norma">Sem norma (2500€)</option>
+                <option value="desconhecido">Desconhecido (2500€)</option>
               </select>
             </div>
-          )}
-
-          {/* 8. Tipo de Teste CO₂ */}
-          {showCycle && (
+          ) : (
             <div className={card}>
-              <label className={lbl}>Tipo de Teste CO₂</label>
+              <label className={lbl}>7. Autonomia Elétrica</label>
+              <input type="number" className={inp} value={form.electricRange || ""}
+                onChange={e => update("electricRange", Number(e.target.value) || undefined)}
+                min="0" max="200" step="1" placeholder="Ex: 50 km" />
+            </div>
+          )}
+        </div>
+
+        {/* Linha 4: Tipo de Teste CO2 - Emissão de Gases */}
+        {showCo2 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 8. Tipo de Teste CO₂ */}
+            <div className={card}>
+              <label className={lbl}>8. Tipo de Teste CO₂</label>
               <select className={sel} value={form.cycle} onChange={e => update("cycle", e.target.value)}>
                 <option value="WLTP">WLTP (veículos a partir de 2019)</option>
                 <option value="NEDC">NEDC (veículos até 2018)</option>
               </select>
             </div>
-          )}
 
-          {/* 9. CO₂ */}
-          {showCo2 && (
+            {/* 9. Emissão de CO₂ */}
             <div className={card}>
-              <label className={lbl}>Emissão de CO₂ (g/km)</label>
+              <label className={lbl}>9. Emissão de CO₂ (g/km)</label>
               <input type="number" className={inp} value={form.co2 || ""}
                 onChange={e => update("co2", Number(e.target.value))}
-                min="0" step="0.1" placeholder="Ex: 34" />
+                min="0" step="0.1" required placeholder="Ex: 34" />
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Botões */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
