@@ -46,13 +46,13 @@ export function calculateISV(input: IsvInput): IsvBreakdown {
     totalISV: r.finalTotal,
     breakdown: {
       ccComponent: r.ccComponent, co2Component: r.co2Component,
-      dieselSurcharge: r.dieselSurcharge, ageReduction: r.ageDiscountTotal,
+      dieselSurcharge: 0, ageReduction: r.ageDiscount,
     },
     details: {
       ccRate: input.engineCC > 0 ? r.ccComponent / input.engineCC : 0,
       co2Rate: input.co2Emissions > 0 ? r.co2Component / input.co2Emissions : 0,
       isNewVehicleTable: input.originCountry === "pais_terceiro" || input.vehicleCondition === "novo",
-      ageReductionPercent: 0,
+      ageReductionPercent: r.ageReductionPercent,
     },
   };
 }

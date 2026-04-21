@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { calculateIsv } from "@/lib/isv/calculation";
-import { IsvInput, VehicleType, FuelType, ParticleFilter, CommercialSubtype } from "@/lib/isv/types";
+import { IsvInput, VehicleType, FuelType, ParticleFilter } from "@/lib/isv/types";
+import { isv2026Config } from "@/lib/isv/isv-2026-config";
 
 const currentYear = new Date().getFullYear();
 
@@ -28,7 +29,7 @@ const MESES = [
 const ANOS = Array.from({ length: currentYear - 1969 }, (_, i) => currentYear + 1 - i);
 
 const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
-  passageiros: "Ligeiro de Passageiros / Misto",
+  passageiros: "Ligeiro de Passageiros",
   comercial: "Comercial / Ligeiro de Mercadorias",
   autocaravana: "Autocaravana",
   moto: "Motociclo / Triciclo / Quadriciclo",
@@ -37,15 +38,19 @@ const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
 };
 const FUEL_LABELS: Record<FuelType, string> = {
   gasolina: "Gasolina", gasoleo: "Gasóleo", hibrido: "Híbrido (auto-recarregável)",
-  hibrido_plugin: "Híbrido Plug-in", gn: "Gás Natural", gpl: "GPL",
+  hibrido_plugin: "Híbrido Plug-in", gn: "Gás Natural (CNG)", gpl: "GPL",
 };
-const COMMERCIAL_SUBTYPES: { value: CommercialSubtype; label: string; pct: string }[] = [
-  { value: "furgao_2lug", label: "Furgão 2 lugares / caixa fechada", pct: "100%" },
-  { value: "furgao_mercadorias", label: "Furgão mercadorias (altura carga ≥121cm)", pct: "10%" },
-  { value: "furgao_misto", label: "Furgão misto (≥2300kg, caixa ≥145×130cm)", pct: "15%" },
-  { value: "caixa_aberta", label: "Carrinha caixa aberta", pct: "10%" },
-  { value: "cabine_dupla", label: "Carrinha cabine dupla/tripla", pct: "15%" },
-  { value: "cabine_dupla_4x4", label: "Carrinha cabine dupla/tripla 4×4", pct: "50%" },
+
+/** Lista de partículas com os valores de agravação 2026 */
+const PARTICLE_OPTIONS: { value: ParticleFilter; label: string; surcharge: number }[] = [
+  { value: "euro6d", label: "Euro 6d", surcharge: 0 },
+  { value: "euro6dtemp", label: "Euro 6d-temp", surcharge: 0 },
+  { value: "euro6c", label: "Euro 6c", surcharge: 500 },
+  { value: "euro6b", label: "Euro 6b ou inferior", surcharge: 1000 },
+  { value: "euro6a", label: "Euro 6a", surcharge: 1000 },
+  { value: "euro5", label: "Euro 5", surcharge: 1000 },
+  { value: "sem_norma", label: "Sem norma", surcharge: 2500 },
+  { value: "desconhecido", label: "Desconhecido", surcharge: 2500 },
 ];
 
 export default function IsvSimulatorNew() {
@@ -66,22 +71,16 @@ export default function IsvSimulatorNew() {
     }
     if (!form.cc || form.cc <= 0) { setError("Preencha a cilindrada"); return; }
     if (!form.day || !form.month || !form.year) { setError("Selecione a data de matrícula"); return; }
-    if (form.vehicleType === "passageiros" && (form.co2 === undefined || form.co2 < 0)) {
+    if (form.vehicleType !== "moto" && (form.co2 === undefined || form.co2 < 0)) {
       setError("Preencha as emissões de CO₂"); return;
     }
     try { setResult(calculateIsv(form)); setShowResults(true); setError(""); }
     catch (err) { setError("Erro ao calcular."); console.error(err); }
   };
 
-  const showCommercialSub = form.vehicleType === "comercial";
   const showParticles = form.fuel === "gasoleo";
-  const showElecRange = form.fuel === "hibrido" || form.fuel === "hibrido_plugin";
-  const showCo2 = form.vehicleType !== "moto" && form.vehicleType !== "comercial";
-  const showCycle = showCo2;
+  const showCo2 = form.vehicleType !== "moto";
   const showCond = form.origin === "ue";
-
-  const fmt = (v: number) =>
-    new Intl.NumberFormat("pt-PT", { style: "currency", currency: "EUR" }).format(v);
 
   const sel = "w-full h-12 px-4 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all";
   const inp = "w-full h-12 px-4 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all";
@@ -91,9 +90,9 @@ export default function IsvSimulatorNew() {
   return (
     <div className="max-w-5xl mx-auto py-8 px-4">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Linha 1: Origem - Estado - Data (33% cada) */}
+        {/* Linha 1: Origem - Estado - Data */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* 1. Origem */}
+          {/* Origem */}
           <div className={card}>
             <label className={lbl}>1. Origem</label>
             <select className={sel} value={form.origin} onChange={e => update("origin", e.target.value)} required>
@@ -102,7 +101,7 @@ export default function IsvSimulatorNew() {
             </select>
           </div>
 
-          {/* 2. Estado do Veículo (só UE) */}
+          {/* Estado do Veículo (só UE) */}
           {showCond && (
             <div className={card}>
               <label className={lbl}>2. Estado do Veículo</label>
@@ -113,7 +112,7 @@ export default function IsvSimulatorNew() {
             </div>
           )}
 
-          {/* 3. Data de Matrícula */}
+          {/* Data de Matrícula */}
           <div className={card}>
             <label className={lbl}>3. Data de Registo</label>
             <div className="flex gap-1">
@@ -136,37 +135,21 @@ export default function IsvSimulatorNew() {
           </div>
         </div>
 
-        {/* Linha 2: Tipo de Veículo (largura full) */}
+        {/* Linha 2: Tipo de Veículo */}
         <div className="grid grid-cols-1 gap-4">
           <div className={card}>
             <label className={lbl}>4. Tipo de Veículo</label>
             <select className={sel} value={form.vehicleType} onChange={e => update("vehicleType", e.target.value)} required>
-              <option value="passageiros">Ligeiro de Passageiros / Misto</option>
-              <option value="comercial">Comercial / Ligeiro de Mercadorias</option>
-              <option value="autocaravana">Autocaravana</option>
+              <option value="passageiros">Ligeiro de Passageiros</option>
               <option value="moto">Motociclo / Triciclo / Quadriciclo</option>
               <option value="eletrico">Elétrico Puro (Isento)</option>
-              <option value="anterior1970">Veículo Anterior a 1970</option>
             </select>
           </div>
-
-          {/* Sub-tipo Comercial */}
-          {showCommercialSub && (
-            <div className={card}>
-              <label className={lbl}>Sub-tipo Comercial</label>
-              <select className={sel} value={form.commercialSubtype || "furgao_2lug"}
-                onChange={e => update("commercialSubtype", e.target.value)}>
-                {COMMERCIAL_SUBTYPES.map(s => (
-                  <option key={s.value} value={s.value}>{s.label} ({s.pct})</option>
-                ))}
-              </select>
-            </div>
-          )}
         </div>
 
         {/* Linha 3: Cilindrada - Combustível - Partículas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* 5. Cilindrada */}
+          {/* Cilindrada */}
           <div className={card}>
             <label className={lbl}>5. Cilindrada (cm³)</label>
             <input type="number" className={inp} value={form.cc || ""}
@@ -174,7 +157,7 @@ export default function IsvSimulatorNew() {
               min="0" step="1" required placeholder="Ex: 2995" />
           </div>
 
-          {/* 6. Combustível */}
+          {/* Combustível */}
           <div className={card}>
             <label className={lbl}>6. Combustível</label>
             <select className={sel} value={form.fuel} onChange={e => update("fuel", e.target.value)} required>
@@ -184,26 +167,25 @@ export default function IsvSimulatorNew() {
             </select>
           </div>
 
-          {/* 7. Partículas (só gasóleo) */}
+          {/* Partículas (só gasóleo) ou CO₂ (se não gasóleo) */}
           {showParticles ? (
             <div className={card}>
               <label className={lbl}>7. Partículas Diesel</label>
               <select className={sel} value={form.particles || "desconhecido"}
                 onChange={e => update("particles", e.target.value)}>
-                <option value="euro6d">Euro 6d (0€)</option>
-                <option value="euro6dtemp">Euro 6d-temp (0€)</option>
-                <option value="euro6c">Euro 6c (500€)</option>
-                <option value="euro6b">Euro 6b ou inferior (1000€)</option>
-                <option value="sem_norma">Sem norma (2500€)</option>
-                <option value="desconhecido">Desconhecido (2500€)</option>
+                {PARTICLE_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>
+                    {o.label} (+{o.surcharge}€)
+                  </option>
+                ))}
               </select>
             </div>
           ) : (
             <div className={card}>
-              <label className={lbl}>7. Autonomia Elétrica</label>
-              <input type="number" className={inp} value={form.electricRange || ""}
-                onChange={e => update("electricRange", Number(e.target.value) || undefined)}
-                min="0" max="200" step="1" placeholder="Ex: 50 km" />
+              <label className={lbl}>7. Combustível extra</label>
+              <div className="h-12 flex items-center text-sm text-gray-500">
+                N/A para este combustível
+              </div>
             </div>
           )}
         </div>
@@ -211,7 +193,7 @@ export default function IsvSimulatorNew() {
         {/* Linha 4: Tipo de Teste CO2 - Emissão de Gases */}
         {showCo2 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 8. Tipo de Teste CO₂ */}
+            {/* Tipo de Teste CO₂ */}
             <div className={card}>
               <label className={lbl}>8. Tipo de Teste CO₂</label>
               <select className={sel} value={form.cycle} onChange={e => update("cycle", e.target.value)}>
@@ -220,7 +202,7 @@ export default function IsvSimulatorNew() {
               </select>
             </div>
 
-            {/* 9. Emissão de CO₂ */}
+            {/* Emissão de CO₂ */}
             <div className={card}>
               <label className={lbl}>9. Emissão de CO₂ (g/km)</label>
               <input type="number" className={inp} value={form.co2 || ""}
@@ -278,26 +260,22 @@ export default function IsvSimulatorNew() {
                       {fmt(result.co2Component)}
                     </span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b">
-                    <span className="text-gray-600 font-medium">Base Tributável</span>
-                    <span className="font-bold">{fmt(result.taxableBase)}</span>
-                  </div>
-                  <div className="flex justify-between pb-2 border-b">
-                    <span className="text-gray-600 font-medium">
-                      Taxa aplicável ({result.ccApplyPercent}%)
-                    </span>
-                    <span className="font-bold">{fmt(result.totalAfterPercent)}</span>
-                  </div>
-                  {result.ageDiscountTotal > 0 && (
+                  {result.ageDiscount > 0 && (
                     <div className="flex justify-between pb-2 border-b">
-                      <span className="text-gray-600">Redução por Idade</span>
-                      <span className="font-semibold text-green-600">−{fmt(result.ageDiscountTotal)}</span>
+                      <span className="text-gray-600">
+                        Redução por Idade ({result.ageReductionPercent}%)
+                      </span>
+                      <span className="font-semibold text-green-600">−{fmt(result.ageDiscount)}</span>
                     </div>
                   )}
-                  {result.dieselSurcharge > 0 && (
+                  <div className="flex justify-between pb-2 border-b">
+                    <span className="text-gray-600">ISV Bruto</span>
+                    <span className="font-bold">{fmt(result.isvGross)}</span>
+                  </div>
+                  {result.exemptReason && (
                     <div className="flex justify-between pb-2 border-b">
-                      <span className="text-gray-600">Agravamento Partículas</span>
-                      <span className="font-semibold text-red-600">+{fmt(result.dieselSurcharge)}</span>
+                      <span className="text-gray-600 text-sm">{result.exemptReason}</span>
+                      <span className="font-semibold text-blue-600 text-sm"></span>
                     </div>
                   )}
                   <div className="flex justify-between pt-3 border-t border-gray-300">
@@ -317,7 +295,7 @@ export default function IsvSimulatorNew() {
                   <div className="flex justify-between"><span className="text-gray-600">Cilindrada</span><span className="font-medium">{form.cc} cm³</span></div>
                   {showCo2 && <div className="flex justify-between"><span className="text-gray-600">CO₂</span><span className="font-medium">{form.co2} g/km ({form.cycle})</span></div>}
                   <div className="mt-4 p-3 bg-blue-50 rounded text-xs text-gray-600">
-                    <strong>Nota:</strong> Valor estimado com base nas tabelas ISV 2026. Confirme com a Autoridade Tributária.
+                    <strong>Nota:</strong> Valor estimado com base nas tabelas ISV 2026 (OE2026). Confirme sempre com a Autoridade Tributária.
                   </div>
                 </div>
               </div>
@@ -327,4 +305,8 @@ export default function IsvSimulatorNew() {
       )}
     </div>
   );
+}
+
+function fmt(v: number) {
+  return new Intl.NumberFormat("pt-PT", { style: "currency", currency: "EUR" }).format(v);
 }

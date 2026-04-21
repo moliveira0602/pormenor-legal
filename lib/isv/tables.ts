@@ -1,89 +1,53 @@
-import { IsvTables, IsvTableEntry, AgeReductionEntry } from "./types";
+// ISV 2026 — Tabelas Oficiais (OE2026) — Ligeiros de Passageiros
 
 // ============================================================
-// TABELA A — Ligeiros de Passageiros e Mistos (Cilindrada)
+// COMPONENTE CILINDRADA — 3 escalões (não progressivo)
+// Fórmula: cc * taxa - abatimento
 // ============================================================
-export const CC_PASSAGEIROS: IsvTableEntry[] = [
-  { limit: 1000, rate: 0.00, deductible: 0, applyPercent: 0 },
-  { limit: 1250, rate: 1.07, deductible: 1070.00, applyPercent: 7 },
-  { limit: 1750, rate: 2.37, deductible: 2642.50, applyPercent: 15 },
-  { limit: 2500, rate: 3.91, deductible: 5390.00, applyPercent: 23 },
-  { limit: 3000, rate: 5.61, deductible: 6194.88, applyPercent: 25 },
-  { limit: Infinity, rate: 7.37, deductible: 11474.88, applyPercent: 28 },
+
+export const CC_PASSAGEIROS: { limit: number; rate: number; deductible: number }[] = [
+  { limit: 1000, rate: 1.09, deductible: 849.03 },
+  { limit: 1250, rate: 1.18, deductible: 850.69 },
+  { limit: Infinity, rate: 5.61, deductible: 6194.88 },
 ];
 
 // ============================================================
-// TABELA B — Ligeiros de Mercadorias, Autocaravanas, Pré-1970
+// COMPONENTE AMBIENTAL WLTP — Gasolina / GPL / GNV
 // ============================================================
-export const CC_MERCADORIAS: IsvTableEntry[] = [
-  { limit: 1250, rate: 5.30, deductible: 3331.68, applyPercent: 100 },
-  { limit: Infinity, rate: 12.58, deductible: 12138.47, applyPercent: 100 },
+
+export const CO2_GASOLINA_WLTP: { limit: number; rate: number; deductible: number }[] = [
+  { limit: 110, rate: 0.44, deductible: 43.02 },
+  { limit: 115, rate: 1.10, deductible: 115.80 },
+  { limit: 120, rate: 1.38, deductible: 147.79 },
+  { limit: 130, rate: 5.27, deductible: 619.17 },
+  { limit: 145, rate: 6.38, deductible: 762.73 },
+  { limit: 175, rate: 41.54, deductible: 5819.56 },
+  { limit: 195, rate: 51.38, deductible: 7247.39 },
+  { limit: 235, rate: 193.01, deductible: 34190.52 },
+  { limit: Infinity, rate: 233.81, deductible: 41910.96 },
 ];
 
 // ============================================================
-// TABELA C — Motociclos, Triciclos, Quadriciclos
+// COMPONENTE AMBIENTAL WLTP — Diesel / Gasóleo
 // ============================================================
-export const CC_MOTOS: IsvTableEntry[] = [
-  { limit: 125, rate: 0, deductible: 0, applyPercent: 0 },
-  { limit: 250, rate: 0.54, deductible: 53.94, applyPercent: 100 },
-  { limit: 500, rate: 1.44, deductible: 280.18, applyPercent: 100 },
-  { limit: 750, rate: 2.85, deductible: 987.17, applyPercent: 100 },
-  { limit: Infinity, rate: 5.58, deductible: 3034.19, applyPercent: 100 },
+
+export const CO2_GASOLEO_WLTP: { limit: number; rate: number; deductible: number }[] = [
+  { limit: 110, rate: 1.72, deductible: 11.50 },
+  { limit: 120, rate: 18.96, deductible: 1906.19 },
+  { limit: 140, rate: 65.04, deductible: 7360.85 },
+  { limit: 150, rate: 127.40, deductible: 16080.57 },
+  { limit: 160, rate: 160.81, deductible: 21176.06 },
+  { limit: 170, rate: 221.69, deductible: 29227.38 },
+  { limit: 190, rate: 274.08, deductible: 36987.98 },
+  { limit: Infinity, rate: 282.35, deductible: 38271.32 },
 ];
 
 // ============================================================
-// COMPONENTE AMBIENTAL — Gasolina / GPL / GN — NEDC
+// REDUÇÃO POR IDADE — importados usados da UE (aplica-se ao total bruto)
+// Intervalos: [min, max) — age >= minYears && age < maxYears
 // ============================================================
-const CO2_GAS_NEDC: IsvTableEntry[] = [
-  { limit: 99, rate: 4.62, deductible: 427.00, applyPercent: 20 },
-  { limit: 115, rate: 8.09, deductible: 750.99, applyPercent: 23 },
-  { limit: 145, rate: 52.56, deductible: 5903.94, applyPercent: 25 },
-  { limit: 175, rate: 61.24, deductible: 7140.17, applyPercent: 23 },
-  { limit: 195, rate: 155.97, deductible: 23627.27, applyPercent: 25 },
-  { limit: Infinity, rate: 205.65, deductible: 33390.12, applyPercent: 28 },
-];
 
-// ============================================================
-// COMPONENTE AMBIENTAL — Gasolina / GPL / GN — WLTP
-// ============================================================
-const CO2_GAS_WLTP: IsvTableEntry[] = [
-  { limit: 99, rate: 0.44, deductible: 43.02, applyPercent: 20 },
-  { limit: 115, rate: 1.36, deductible: 135.52, applyPercent: 23 },
-  { limit: 145, rate: 2.59, deductible: 277.40, applyPercent: 25 },
-  { limit: 175, rate: 5.24, deductible: 662.15, applyPercent: 23 },
-  { limit: 195, rate: 11.16, deductible: 1695.35, applyPercent: 25 },
-  { limit: Infinity, rate: 27.74, deductible: 4934.05, applyPercent: 28 },
-];
-
-// ============================================================
-// COMPONENTE AMBIENTAL — Gasóleo — NEDC
-// ============================================================
-const CO2_DIESEL_NEDC: IsvTableEntry[] = [
-  { limit: 79, rate: 0.44, deductible: 34.10, applyPercent: 20 },
-  { limit: 95, rate: 1.36, deductible: 107.30, applyPercent: 23 },
-  { limit: 120, rate: 2.59, deductible: 224.80, applyPercent: 25 },
-  { limit: 140, rate: 5.24, deductible: 542.80, applyPercent: 23 },
-  { limit: 160, rate: 11.16, deductible: 1371.60, applyPercent: 25 },
-  { limit: Infinity, rate: 27.74, deductible: 3988.00, applyPercent: 28 },
-];
-
-// ============================================================
-// COMPONENTE AMBIENTAL — Gasóleo — WLTP
-// ============================================================
-const CO2_DIESEL_WLTP: IsvTableEntry[] = [
-  { limit: 79, rate: 0.44, deductible: 34.10, applyPercent: 20 },
-  { limit: 95, rate: 1.36, deductible: 107.30, applyPercent: 23 },
-  { limit: 120, rate: 2.59, deductible: 224.80, applyPercent: 25 },
-  { limit: 140, rate: 5.24, deductible: 542.80, applyPercent: 23 },
-  { limit: 160, rate: 11.16, deductible: 1371.60, applyPercent: 25 },
-  { limit: Infinity, rate: 27.74, deductible: 3988.00, applyPercent: 28 },
-];
-
-// ============================================================
-// REDUÇÃO POR IDADE — Separate para Cilindrada e Ambiental
-// ============================================================
-export const AGE_REDUCTION_CC: AgeReductionEntry[] = [
-  { minYears: 0, maxYears: 1, percent: 0 },
+export const AGE_REDUCTION = [
   { minYears: 1, maxYears: 2, percent: 20 },
   { minYears: 2, maxYears: 3, percent: 28 },
   { minYears: 3, maxYears: 4, percent: 35 },
@@ -96,56 +60,23 @@ export const AGE_REDUCTION_CC: AgeReductionEntry[] = [
   { minYears: 10, maxYears: Infinity, percent: 80 },
 ];
 
-export const AGE_REDUCTION_CO2: AgeReductionEntry[] = [
-  { minYears: 0, maxYears: Infinity, percent: 0 },
-];
+// ============================================================
+// COMBUSTÍVEL → tipo de tabela ambiental
+// ============================================================
 
-// ============================================================
-// AGRAVAMENTO PARTÍCULAS (Diesel)
-// ============================================================
-export const DIESEL_SURCHARGE: Record<string, number> = {
-  euro6d: 0,
-  euro6dtemp: 0,
-  euro6c: 500,
-  euro6b: 1000,
-  euro6a: 1000,
-  euro5: 1000,
-  sem_norma: 2500,
-  desconhecido: 2500,
+export type Co2TableKey = "gasolina" | "gasoleo";
+
+/** GPL e GNV usam a mesma tabela que gasolina */
+export const FUEL_TO_CO2_TABLE: Record<string, Co2TableKey> = {
+  gasolina: "gasolina",
+  gpl: "gasolina",
+  gn: "gasolina",
+  gasoleo: "gasoleo",
 };
 
 // ============================================================
-// TABELAS ISV 2026 (OE2026)
+// Descontos híbridos
 // ============================================================
-export const TABLES_2025: IsvTables = {
-  ccPassageiros: CC_PASSAGEIROS,
-  ccMercadorias: CC_MERCADORIAS,
-  ccMotos: CC_MOTOS,
-  co2: {
-    gasolina: {
-      nedc: CO2_GAS_NEDC,
-      wltp: CO2_GAS_WLTP,
-    },
-    gasoleo: {
-      nedc: CO2_DIESEL_NEDC,
-      wltp: CO2_DIESEL_WLTP,
-    },
-  },
-  ageReduction: AGE_REDUCTION_CC,
-  ageReductionCo2: AGE_REDUCTION_CO2,
-};
 
-// ============================================================
-// Percentagens por sub-tipo comercial (Tabela B)
-// ============================================================
-export const COMMERCIAL_PERCENTAGES: Record<string, number> = {
-  furgao_2lug: 1.0,
-  furgao_mercadorias: 0.10,
-  furgao_misto: 0.15,
-  caixa_aberta: 0.10,
-  cabine_dupla: 0.15,
-  cabine_dupla_4x4: 0.50,
-};
-
-export const AUTOCARAVANA_PERCENT = 1.0;
-export const ANTERIOR_1970_PERCENT = 0.20;
+export const HYBRID_DISCOUNT = 0.40; // 40% desconto — híbrido clássico
+export const PHEV_DISCOUNT = 0.75;    // 75% desconto — plug-in híbrido

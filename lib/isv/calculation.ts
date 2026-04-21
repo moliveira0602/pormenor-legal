@@ -1,176 +1,168 @@
-import { TABLES_2025, DIESEL_SURCHARGE } from "./tables";
-import { IsvBreakdown, IsvInput, IsvTableEntry } from "./types";
-import { COMMERCIAL_PERCENTAGES, AUTOCARAVANA_PERCENT, ANTERIOR_1970_PERCENT, AGE_REDUCTION_CC, AGE_REDUCTION_CO2 } from "./tables";
+import { createIsvBreakdown } from "./index";
+import type { IsvBreakdown, IsvInput } from "./types";
+import {
+  CC_PASSAGEIROS,
+  CO2_GASOLINA_WLTP,
+  CO2_GASOLEO_WLTP,
+  AGE_REDUCTION,
+  FUEL_TO_CO2_TABLE,
+  HYBRID_DISCOUNT,
+  PHEV_DISCOUNT,
+} from "./tables";
 
-function getTableEntry(table: IsvTableEntry[], value: number): IsvTableEntry {
-  for (const entry of table) {
-    if (value <= entry.limit) return entry;
+// ============================================================
+// Helper functions — uma responsabilidade cada
+// ============================================================
+
+/**
+ * Obtém o escalão da cilindrada.
+ * Um único escalão (NÃO progressivo) — primeiro escalão onde value <= limit.
+ */
+function getCcBrac(value: number): { rate: number; deductible: number } {
+  for (const b of CC_PASSAGEIROS) {
+    if (value <= b.limit) return { rate: b.rate, deductible: b.deductible };
   }
-  return table[table.length - 1];
+  const last = CC_PASSAGEIROS[CC_PASSAGEIROS.length - 1];
+  return { rate: last.rate, deductible: last.deductible };
 }
 
-function calcComponent(value: number, table: IsvTableEntry[]): { amount: number; applyPercent: number } {
-  const entry = getTableEntry(table, value);
-  return {
-    amount: value * entry.rate - entry.deductible,
-    applyPercent: entry.applyPercent
-  };
+/**
+ * Obtém o escalão de CO2 para gasoline/GPL/GNV (WLTP).
+ */
+function getCo2BracGasolina(co2: number): { rate: number; deductible: number } {
+  for (const b of CO2_GASOLINA_WLTP) {
+    if (co2 <= b.limit) return { rate: b.rate, deductible: b.deductible };
+  }
+  const last = CO2_GASOLINA_WLTP[CO2_GASOLINA_WLTP.length - 1];
+  return { rate: last.rate, deductible: last.deductible };
 }
 
+/**
+ * Obtém o escalão de CO2 para diesel/gasóleo (WLTP).
+ */
+function getCo2BracGasoleo(co2: number): { rate: number; deductible: number } {
+  for (const b of CO2_GASOLEO_WLTP) {
+    if (co2 <= b.limit) return { rate: b.rate, deductible: b.deductible };
+  }
+  const last = CO2_GASOLEO_WLTP[CO2_GASOLEO_WLTP.length - 1];
+  return { rate: last.rate, deductible: last.deductible };
+}
+
+/**
+ * Redução por idade para importados da UE.
+ * age >= minYears && age < maxYears (semelhante à tabela oficial).
+ */
+function getAgeReduction(age: number): number {
+  for (const r of AGE_REDUCTION) {
+    if (age >= r.minYears && age < r.maxYears) return r.percent;
+  }
+  return 0;
+}
+
+/**
+ * Calcula a idade do veículo em anos decimais.
+ */
 function calcAge(year: number, month: number, day: number): number {
   const now = new Date();
   const reg = new Date(year, month - 1, day);
-  return Math.abs(now.getTime() - reg.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+  const diffMs = now.getTime() - reg.getTime();
+  return diffMs / (1000 * 60 * 60 * 24 * 365.25);
 }
 
-function getAgeReductionCc(age: number): number {
-  for (const b of AGE_REDUCTION_CC) {
-    if (age > b.minYears && age <= b.maxYears) return b.percent;
-  }
-  return 0;
-}
+// ============================================================
+// Main calculation
+// ============================================================
 
-function getAgeReductionCo2(age: number): number {
-  for (const b of AGE_REDUCTION_CO2) {
-    if (age > b.minYears && age <= b.maxYears) return b.percent;
-  }
-  return 0;
+function calcDieselSurcharge(fuel: string, particles: string | undefined): number {
+  if (fuel !== "gasoleo") return 0;
+  // Euro 6d / 6d-temp → sem agravação (estão abaixo do limiar de 0.001 g/km)
+  const norm = particles ?? "desconhecido";
+  if (norm === "euro6d" || norm === "euro6dtemp") return 0;
+  // Todas as outras normas + desconhecido → +500€
+  return 500;
 }
 
 export function calculateIsv(input: IsvInput): IsvBreakdown {
-  const t = TABLES_2025;
   const version = "Tabelas ISV 2026 (OE2026)";
 
   // --- ISENÇÕES ---
-  if (input.vehicleType === "eletrico")
-    return createExempt("Veículo 100% Elétrico — Isento de ISV", version);
-  if (input.transferResidence)
-    return createExempt("Transferência de Residência — Isento de ISV", version);
-  if (input.vehicleType === "moto" && input.cc <= 125)
-    return createExempt("Motociclo até 125cc — Isento de ISV", version);
-
-  // PASSO 1 — Cilindrada
-  let ccComponent = 0;
-  let ccApplyPercent = 100;
-  switch (input.vehicleType) {
-    case "passageiros": {
-      const result = calcComponent(input.cc, t.ccPassageiros);
-      ccComponent = result.amount;
-      ccApplyPercent = result.applyPercent;
-      break;
-    }
-    case "comercial": {
-      const sub = input.commercialSubtype || "furgao_2lug";
-      const pct = COMMERCIAL_PERCENTAGES[sub] ?? 1.0;
-      const result = calcComponent(input.cc, t.ccMercadorias);
-      ccComponent = result.amount * pct;
-      ccApplyPercent = result.applyPercent;
-      break;
-    }
-    case "autocaravana": {
-      const result = calcComponent(input.cc, t.ccMercadorias);
-      ccComponent = result.amount * AUTOCARAVANA_PERCENT;
-      ccApplyPercent = result.applyPercent;
-      break;
-    }
-    case "moto": {
-      const result = calcComponent(input.cc, t.ccMotos);
-      ccComponent = result.amount;
-      ccApplyPercent = result.applyPercent;
-      break;
-    }
-    case "anterior1970": {
-      const result = calcComponent(input.cc, t.ccMercadorias);
-      ccComponent = result.amount * ANTERIOR_1970_PERCENT;
-      ccApplyPercent = result.applyPercent;
-      break;
-    }
+  if (input.vehicleType === "eletrico") {
+    return createIsvBreakdown(0, 0, 0, 0, 0, 0, true, "Veículo 100% Elétrico — Isento de ISV", version);
+  }
+  if (input.transferResidence) {
+    return createIsvBreakdown(0, 0, 0, 0, 0, 0, true, "Transferência de Residência — Isento de ISV", version);
   }
 
-  // PASSO 2 — CO₂ (só passageiros)
-  let co2Component = 0;
-  let co2ApplyPercent = 100;
-  if (input.vehicleType === "passageiros") {
-    const isDiesel = input.fuel === "gasoleo";
-    const tbl = isDiesel
-      ? (input.cycle === "WLTP" ? t.co2.gasoleo.wltp : t.co2.gasoleo.nedc)
-      : (input.cycle === "WLTP" ? t.co2.gasolina.wltp : t.co2.gasolina.nedc);
-    const result = calcComponent(input.co2, tbl);
-    co2Component = result.amount;
-    co2ApplyPercent = result.applyPercent;
+  // --- Mapa de combustível para tabela CO2 ---
+  // gasolina, gpl, gn → gasolina | gasoleo → gasoleo
+  const tableKey = FUEL_TO_CO2_TABLE[input.fuel];
+  if (tableKey === undefined) {
+    return createIsvBreakdown(0, 0, 0, 0, 0, 0, true, `Combustível "${input.fuel}" não suportado`, version);
   }
 
-  // PASSO 3 — Base tributável = CC + ambiental (ambiental pode ser negativo)
-  const taxableBase = ccComponent + co2Component;
+  // 1) Componente Cilindrada
+  //    fórmula: cc * taxa - abatimento (escalão único)
+  const ccBrac = getCcBrac(input.cc);
+  const ccComponent = input.cc * ccBrac.rate - ccBrac.deductible;
 
-  // PASSO 4 — Aplicar % da tabela
-  // Para passageiros: usar a % da cilindrada sobre a soma (CC + CO2)
-  // Para outros: cada componente com sua %
-  let totalAfterPercent: number;
-  if (input.vehicleType === "passageiros") {
-    // Base × % da tabela de cilindrada
-    totalAfterPercent = taxableBase * (ccApplyPercent / 100);
+  // 2) Componente Ambiental
+  //    fórmula: co2 * taxa - abatimento (escalão único)
+  let co2Component: number;
+  if (tableKey === "gasolina") {
+    const b = getCo2BracGasolina(input.co2);
+    co2Component = input.co2 * b.rate - b.deductible;
   } else {
-    const ccAfterPercent = (ccComponent * ccApplyPercent) / 100;
-    const co2AfterPercent = (co2Component * co2ApplyPercent) / 100;
-    totalAfterPercent = ccAfterPercent + co2AfterPercent;
+    const b = getCo2BracGasoleo(input.co2);
+    co2Component = input.co2 * b.rate - b.deductible;
   }
 
-  // PASSO 5 — Redução por idade
-  // Para passageiros: redução apenas sobre CC
-  // Para outros: redução sobre ambos
-  let ageDiscCc = 0, ageDiscCo2 = 0, age = 0;
+  // 3) Agravamento partículas (apenas gasóleo)
+  const dieselSurcharge = calcDieselSurcharge(input.fuel, input.particles);
+
+  // 4) ISV bruto = componente_cilindrada + componente_ambiental + agravamento
+  //    (arredondar apenas no final, manter precisão intermédia)
+  let isvGross = ccComponent + co2Component + dieselSurcharge;
+
+  // 5) Redução para usados importados da UE — aplica-se ao TOTAL BRUTO
+  let ageReductionPercent = 0;
+  let ageDiscount = 0;
   if (input.origin === "ue" && input.condition === "usado") {
-    age = calcAge(input.year, input.month, input.day);
-    const agePctCc = getAgeReductionCc(age);
-    const agePctCo2 = getAgeReductionCo2(age);
-    
-    if (input.vehicleType === "passageiros") {
-      // Redução = (CC × % tabela) × % idade
-      const ccWithPercent = ccComponent * (ccApplyPercent / 100);
-      ageDiscCc = ccWithPercent * (agePctCc / 100);
-    } else {
-      ageDiscCc = (ccComponent * ccApplyPercent / 100) * (agePctCc / 100);
-      ageDiscCo2 = (co2Component * co2ApplyPercent / 100) * (agePctCo2 / 100);
-    }
-  }
-  const ageDiscountTotal = ageDiscCc + ageDiscCo2;
-
-  // PASSO 6 — Agravamento partículas (só Diesel)
-  let dieselSurcharge = 0;
-  if (input.fuel === "gasoleo") {
-    const norm = input.particles || "desconhecido";
-    dieselSurcharge = DIESEL_SURCHARGE[norm] || 0;
+    const age = calcAge(input.year, input.month, input.day);
+    ageReductionPercent = getAgeReduction(age);
+    ageDiscount = isvGross * (ageReductionPercent / 100);
   }
 
-  // PASSO 7 — Total
-  const finalTotal = Math.round(Math.max(0, totalAfterPercent - ageDiscountTotal + dieselSurcharge) * 100) / 100;
+  let isvAfterAge = isvGross - ageDiscount;
 
-  return {
+  // 6) Descontos híbrido (aplicados APÓS redução de idade)
+  if (input.fuel === "hibrido") {
+    // Híbrido clássico: 40% desconto
+    isvAfterAge *= (1 - HYBRID_DISCOUNT);
+  }
+  if (input.fuel === "hibrido_plugin") {
+    // Plug-in híbrido: 75% desconto
+    isvAfterAge *= (1 - PHEV_DISCOUNT);
+  }
+
+  // 7) ISV final — nunca negativo, arredondado a 2 casas decimais
+  const finalTotal = Math.max(0, Math.round(isvAfterAge * 100) / 100);
+
+  // Mensagem de desconto híbrido (para debug/UI)
+  const extraMsg = input.fuel === "hibrido"
+    ? "Híbrido clássico (40% desconto)"
+    : input.fuel === "hibrido_plugin"
+      ? "Híbrido plug-in (75% desconto)"
+      : undefined;
+
+  return createIsvBreakdown(
     ccComponent,
-    ccApplyPercent,
     co2Component,
-    co2ApplyPercent,
-    taxableBase,
-    totalAfterPercent,
-    ageDiscountCc: ageDiscCc,
-    ageDiscountCo2: ageDiscCo2,
-    ageDiscountTotal,
-    dieselSurcharge,
+    isvGross,
+    ageReductionPercent,
+    ageDiscount,
     finalTotal,
-    isExempt: false,
+    false,
+    extraMsg,
     version,
-  };
-}
-
-function createExempt(reason: string, version: string): IsvBreakdown {
-  return {
-    ccComponent: 0, ccApplyPercent: 0,
-    co2Component: 0, co2ApplyPercent: 0,
-    taxableBase: 0,
-    totalAfterPercent: 0,
-    ageDiscountCc: 0, ageDiscountCo2: 0, ageDiscountTotal: 0,
-    dieselSurcharge: 0, finalTotal: 0,
-    isExempt: true, exemptReason: reason, version,
-  };
+  );
 }
