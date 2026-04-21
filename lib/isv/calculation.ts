@@ -119,35 +119,32 @@ export function calculateIsv(input: IsvInput): IsvBreakdown {
   // 3) Agravamento partículas (apenas gasóleo)
   const dieselSurcharge = calcDieselSurcharge(input.fuel, input.particles);
 
-  // 4) ISV bruto = componente_cilindrada + componente_ambiental + agravamento
-  //    (arredondar apenas no final, manter precisão intermédia)
-  let isvGross = ccComponent + co2Component + dieselSurcharge;
+  // 4) ISV bruto (antes de reduções/descontos)
+  const isvGross = ccComponent + co2Component + dieselSurcharge;
 
-  // 5) Redução para usados importados da UE — aplica-se ao TOTAL BRUTO
+  // 5) Redução para usados importados da UE — aplica-se apenas à componente cilindrada
   let ageReductionPercent = 0;
   let ageDiscount = 0;
   if (input.origin === "ue" && input.condition === "usado") {
     const age = calcAge(input.year, input.month, input.day);
     ageReductionPercent = getAgeReduction(age);
-    ageDiscount = isvGross * (ageReductionPercent / 100);
+    ageDiscount = ccComponent * (ageReductionPercent / 100);
   }
 
+  // 6) Aplicar desconto ao ISV bruto (aproximação para o valor final)
   let isvAfterAge = isvGross - ageDiscount;
 
-  // 6) Descontos híbrido (aplicados APÓS redução de idade)
+  // 7) Descontos híbrido (aplicados APÓS redução de idade)
   if (input.fuel === "hibrido") {
-    // Híbrido clássico: 40% desconto
     isvAfterAge *= (1 - HYBRID_DISCOUNT);
   }
   if (input.fuel === "hibrido_plugin") {
-    // Plug-in híbrido: 75% desconto
     isvAfterAge *= (1 - PHEV_DISCOUNT);
   }
 
-  // 7) ISV final — nunca negativo, arredondado a 2 casas decimais
+  // 8) ISV final — nunca negativo, arredondado a 2 casas decimais
   const finalTotal = Math.max(0, Math.round(isvAfterAge * 100) / 100);
 
-  // Mensagem de desconto híbrido (para debug/UI)
   const extraMsg = input.fuel === "hibrido"
     ? "Híbrido clássico (40% desconto)"
     : input.fuel === "hibrido_plugin"

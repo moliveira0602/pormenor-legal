@@ -71,6 +71,8 @@ export const FUEL_TO_CO2_TABLE: Record<string, Co2TableKey> = {
   gasolina: "gasolina",
   gpl: "gasolina",
   gn: "gasolina",
+  hibrido: "gasolina",
+  hibrido_plugin: "gasolina",
   gasoleo: "gasoleo",
 };
 
