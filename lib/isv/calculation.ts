@@ -4,11 +4,14 @@ import {
   CC_PASSAGEIROS,
   CO2_GASOLINA_WLTP,
   CO2_GASOLEO_WLTP,
+  CO2_GASOLINA_NEDC,
+  CO2_GASOLEO_NEDC,
   AGE_REDUCTION,
   FUEL_TO_CO2_TABLE,
   HYBRID_DISCOUNT,
   PHEV_DISCOUNT,
 } from "./tables";
+import { Cycle } from "./types";
 
 // ============================================================
 // Helper functions — uma responsabilidade cada
@@ -29,22 +32,24 @@ function getCcBrac(value: number): { rate: number; deductible: number } {
 /**
  * Obtém o escalão de CO2 para gasoline/GPL/GNV (WLTP).
  */
-function getCo2BracGasolina(co2: number): { rate: number; deductible: number } {
-  for (const b of CO2_GASOLINA_WLTP) {
+function getCo2BracGasolina(co2: number, cycle: Cycle): { rate: number; deductible: number } {
+  const table = cycle === "WLTP" ? CO2_GASOLINA_WLTP : CO2_GASOLINA_NEDC;
+  for (const b of table) {
     if (co2 <= b.limit) return { rate: b.rate, deductible: b.deductible };
   }
-  const last = CO2_GASOLINA_WLTP[CO2_GASOLINA_WLTP.length - 1];
+  const last = table[table.length - 1];
   return { rate: last.rate, deductible: last.deductible };
 }
 
 /**
  * Obtém o escalão de CO2 para diesel/gasóleo (WLTP).
  */
-function getCo2BracGasoleo(co2: number): { rate: number; deductible: number } {
-  for (const b of CO2_GASOLEO_WLTP) {
+function getCo2BracGasoleo(co2: number, cycle: Cycle): { rate: number; deductible: number } {
+  const table = cycle === "WLTP" ? CO2_GASOLEO_WLTP : CO2_GASOLEO_NEDC;
+  for (const b of table) {
     if (co2 <= b.limit) return { rate: b.rate, deductible: b.deductible };
   }
-  const last = CO2_GASOLEO_WLTP[CO2_GASOLEO_WLTP.length - 1];
+  const last = table[table.length - 1];
   return { rate: last.rate, deductible: last.deductible };
 }
 
@@ -75,10 +80,18 @@ function calcAge(year: number, month: number, day: number): number {
 
 function calcDieselSurcharge(fuel: string, particles: string | undefined): number {
   if (fuel !== "gasoleo") return 0;
-  // Euro 6d / 6d-temp → sem agravação (estão abaixo do limiar de 0.001 g/km)
-  const norm = particles ?? "desconhecido";
+  // O agravamento de 500€ aplica-se a veículos a gasóleo que não cumpram o limite de partículas de 0,001 g/km.
+  const norm = (particles || "desconhecido").toLowerCase();
+  
+  // Se for uma norma conhecida por estar abaixo do limite
   if (norm === "euro6d" || norm === "euro6dtemp") return 0;
-  // Todas as outras normas + desconhecido → +500€
+  
+  // Se o utilizador inseriu um valor numérico (ex: "0.0005" ou "< 0.001")
+  if (norm.includes("<") || (parseFloat(norm) > 0 && parseFloat(norm) < 0.001)) {
+    return 0;
+  }
+
+  // Todas as outras normas ou desconhecido -> +500€
   return 500;
 }
 
@@ -109,10 +122,10 @@ export function calculateIsv(input: IsvInput): IsvBreakdown {
   //    fórmula: co2 * taxa - abatimento (escalão único)
   let co2Component: number;
   if (tableKey === "gasolina") {
-    const b = getCo2BracGasolina(input.co2);
+    const b = getCo2BracGasolina(input.co2, input.cycle);
     co2Component = input.co2 * b.rate - b.deductible;
   } else {
-    const b = getCo2BracGasoleo(input.co2);
+    const b = getCo2BracGasoleo(input.co2, input.cycle);
     co2Component = input.co2 * b.rate - b.deductible;
   }
 
@@ -120,21 +133,22 @@ export function calculateIsv(input: IsvInput): IsvBreakdown {
   const dieselSurcharge = calcDieselSurcharge(input.fuel, input.particles);
 
   // 4) ISV bruto (antes de reduções/descontos)
-  const isvGross = ccComponent + co2Component + dieselSurcharge;
+  const isvGross = ccComponent + co2Component;
 
-  // 5) Redução para usados importados da UE — aplica-se apenas à componente cilindrada
+  // 5) Redução para usados importados da UE — aplica-se a AMBAS as componentes (Total Bruto)
+  //    Nota: Conforme OE2025 e jurisprudência, a redução é sobre o total ISV (CC+CO2).
   let ageReductionPercent = 0;
   let ageDiscount = 0;
   if (input.origin === "ue" && input.condition === "usado") {
     const age = calcAge(input.year, input.month, input.day);
     ageReductionPercent = getAgeReduction(age);
-    ageDiscount = ccComponent * (ageReductionPercent / 100);
+    ageDiscount = isvGross * (ageReductionPercent / 100);
   }
 
-  // 6) Aplicar desconto ao ISV bruto (aproximação para o valor final)
-  let isvAfterAge = isvGross - ageDiscount;
+  // 6) Aplicar desconto ao ISV bruto e adicionar o agravamento diesel (que não sofre redução)
+  let isvAfterAge = (isvGross - ageDiscount) + dieselSurcharge;
 
-  // 7) Descontos híbrido (aplicados APÓS redução de idade)
+  // 7) Descontos híbrido (aplicados APÓS redução de idade e sobre o valor total)
   if (input.fuel === "hibrido") {
     isvAfterAge *= (1 - HYBRID_DISCOUNT);
   }

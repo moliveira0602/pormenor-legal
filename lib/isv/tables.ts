@@ -43,11 +43,39 @@ export const CO2_GASOLEO_WLTP: { limit: number; rate: number; deductible: number
 ];
 
 // ============================================================
+// COMPONENTE AMBIENTAL NEDC — Gasolina / GPL / GNV
+// ============================================================
+
+export const CO2_GASOLINA_NEDC: { limit: number; rate: number; deductible: number }[] = [
+  { limit: 99, rate: 0.44, deductible: 43.02 },
+  { limit: 115, rate: 1.10, deductible: 115.80 },
+  { limit: 145, rate: 5.27, deductible: 619.17 },
+  { limit: 175, rate: 53.54, deductible: 7625.60 },
+  { limit: 195, rate: 64.88, deductible: 9605.37 },
+  { limit: 235, rate: 202.15, deductible: 36467.73 },
+  { limit: Infinity, rate: 233.81, deductible: 43910.96 },
+];
+
+// ============================================================
+// COMPONENTE AMBIENTAL NEDC — Diesel / Gasóleo
+// ============================================================
+
+export const CO2_GASOLEO_NEDC: { limit: number; rate: number; deductible: number }[] = [
+  { limit: 79, rate: 5.34, deductible: 400.23 },
+  { limit: 95, rate: 22.86, deductible: 1782.69 },
+  { limit: 120, rate: 79.22, deductible: 7195.63 },
+  { limit: 140, rate: 172.39, deductible: 18366.13 },
+  { limit: 160, rate: 197.35, deductible: 21848.84 },
+  { limit: Infinity, rate: 271.76, deductible: 33743.84 },
+];
+
+// ============================================================
 // REDUÇÃO POR IDADE — importados usados da UE (aplica-se ao total bruto)
 // Intervalos: [min, max) — age >= minYears && age < maxYears
 // ============================================================
 
 export const AGE_REDUCTION = [
+  { minYears: 0, maxYears: 1, percent: 10 },
   { minYears: 1, maxYears: 2, percent: 20 },
   { minYears: 2, maxYears: 3, percent: 28 },
   { minYears: 3, maxYears: 4, percent: 35 },
