@@ -39,7 +39,7 @@ export default function Header() {
           </nav>
 
           <a
-            href="#contacts"
+            href="/#simulador"
             className="hidden md:inline-flex bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-[10px] font-display font-bold text-sm transition-all shadow-lg shadow-primary/25 hover:-translate-y-px no-underline"
           >
             Simule agora
