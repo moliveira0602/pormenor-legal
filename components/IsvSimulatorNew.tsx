@@ -14,7 +14,7 @@ const INITIAL_FORM: IsvInput = {
   year: currentYear, month: 1, day: 1,
   cc: 0, co2: 0,
   fuel: "gasolina", cycle: "WLTP",
-  particles: "desconhecido",
+  particles: "less_than_0001",
 };
 
 const DIAS = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -43,14 +43,8 @@ const FUEL_LABELS: Record<FuelType, string> = {
 
 /** Lista de partículas com os valores de agravação 2026 */
 const PARTICLE_OPTIONS: { value: ParticleFilter; label: string; surcharge: number }[] = [
-  { value: "euro6d", label: "Euro 6d", surcharge: 0 },
-  { value: "euro6dtemp", label: "Euro 6d-temp", surcharge: 0 },
-  { value: "euro6c", label: "Euro 6c", surcharge: 500 },
-  { value: "euro6b", label: "Euro 6b ou inferior", surcharge: 1000 },
-  { value: "euro6a", label: "Euro 6a", surcharge: 1000 },
-  { value: "euro5", label: "Euro 5", surcharge: 1000 },
-  { value: "sem_norma", label: "Sem norma", surcharge: 2500 },
-  { value: "desconhecido", label: "Desconhecido", surcharge: 2500 },
+  { value: "less_than_0001", label: "<0.001g-km", surcharge: 0 },
+  { value: "equal_or_greater_than_0001", label: ">=0.001 g/km", surcharge: 500 },
 ];
 
 export default function IsvSimulatorNew() {
@@ -171,11 +165,11 @@ export default function IsvSimulatorNew() {
           {showParticles ? (
             <div className={card}>
               <label className={lbl}>7. Partículas Diesel</label>
-              <select className={sel} value={form.particles || "desconhecido"}
+              <select className={sel} value={form.particles || "less_than_0001"}
                 onChange={e => update("particles", e.target.value)}>
                 {PARTICLE_OPTIONS.map(o => (
                   <option key={o.value} value={o.value}>
-                    {o.label} (+{o.surcharge}€)
+                    {o.label}{o.surcharge > 0 ? ` (+${o.surcharge}€)` : ""}
                   </option>
                 ))}
               </select>

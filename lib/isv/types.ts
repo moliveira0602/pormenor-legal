@@ -3,7 +3,7 @@ export type FuelType = "gasolina" | "gasoleo" | "hibrido" | "hibrido_plugin" | "
 export type Origin = "ue" | "terceiro";
 export type Cycle = "NEDC" | "WLTP";
 export type VehicleCondition = "novo" | "usado";
-export type ParticleFilter = "euro6d" | "euro6dtemp" | "euro6c" | "euro6b" | "euro6a" | "euro5" | "sem_norma" | "desconhecido";
+export type ParticleFilter = "euro6d" | "euro6dtemp" | "euro6c" | "euro6b" | "euro6a" | "euro5" | "sem_norma" | "desconhecido" | "less_than_0001" | "equal_or_greater_than_0001";
 export type VehicleType =
   | "passageiros"
   | "comercial"

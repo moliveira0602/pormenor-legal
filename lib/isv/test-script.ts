@@ -226,6 +226,22 @@ run({
   notes: "Euro 6c → +500€",
 });
 
+run({
+  name: "Diesel com partículas <0.001g-km — sem agravamento",
+  input: { vehicleType: "passageiros", origin: "ue", condition: "novo", year: 2026, month: 1, day: 1, cc: 1500, co2: 130, fuel: "gasoleo", cycle: "WLTP", particles: "less_than_0001" },
+  expectedFinal: (1500 * 5.61 - 6194.88) + (130 * 65.04 - 7360.85),
+  tolerance: 0.1,
+  notes: "<0.001g-km → 0 agravamento",
+});
+
+run({
+  name: "Diesel com partículas >=0.001 g/km — com +500€ agravamento",
+  input: { vehicleType: "passageiros", origin: "ue", condition: "novo", year: 2026, month: 1, day: 1, cc: 1500, co2: 130, fuel: "gasoleo", cycle: "WLTP", particles: "equal_or_greater_than_0001" },
+  expectedFinal: (1500 * 5.61 - 6194.88) + (130 * 65.04 - 7360.85) + 500,
+  tolerance: 0.1,
+  notes: ">=0.001 g/km → +500€",
+});
+
 // --- TESTES: Redução por idade ---
 console.log(">>> Redução por idade (usado importado UE)\n");
 

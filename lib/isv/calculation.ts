@@ -83,11 +83,19 @@ function calcDieselSurcharge(fuel: string, particles: string | undefined): numbe
   // O agravamento de 500€ aplica-se a veículos a gasóleo que não cumpram o limite de partículas de 0,001 g/km.
   const norm = (particles || "desconhecido").toLowerCase();
   
-  // Se for uma norma conhecida por estar abaixo do limite
-  if (norm === "euro6d" || norm === "euro6dtemp") return 0;
+  // Se for uma norma conhecida por estar abaixo do limite, ou se for a nova escolha <0.001g-km
+  if (
+    norm === "euro6d" || 
+    norm === "euro6dtemp" || 
+    norm === "less_than_0001" || 
+    norm.includes("less_than") || 
+    norm.includes("<")
+  ) {
+    return 0;
+  }
   
   // Se o utilizador inseriu um valor numérico (ex: "0.0005" ou "< 0.001")
-  if (norm.includes("<") || (parseFloat(norm) > 0 && parseFloat(norm) < 0.001)) {
+  if (parseFloat(norm) > 0 && parseFloat(norm) < 0.001) {
     return 0;
   }
 
