@@ -1,4 +1,4 @@
-node_modules
+<arg_value>node_modules
 .next
 out
 .env
@@ -23,5 +23,6 @@ out
 /robots.txt
 /sitemap.xml
 /.htaccess
-/send-mail.php
-*.zip
+/mail-config.php
+/*.zip
+node_modules

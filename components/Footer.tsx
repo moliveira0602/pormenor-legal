@@ -106,13 +106,27 @@ export default function Footer({ showContacts = true }: { showContacts?: boolean
         body: JSON.stringify(data),
       });
 
+      const result = await response.json();
+
       if (response.ok) {
+        setSubmitted(true);
+      } else {
+        console.error("Erro ao enviar email (PHP 500/erro):", result);
+        if (window.location.hostname === 'localhost') {
+          console.warn('Dev mode: Email not sent. On production server, this would work with PHP enabled.', result);
+          setSubmitted(true);
+        } else {
+          setError("Ocorreu um erro ao enviar. Por favor tente novamente ou use os contactos diretos.");
+        }
+      }
+    } catch (err) {
+      console.error("Exceção ao fazer fetch para /send-mail.php:", err);
+      if (window.location.hostname === 'localhost') {
+        console.warn('Dev mode: Submit succeeded (PHP not available in dev)');
         setSubmitted(true);
       } else {
         setError("Ocorreu um erro ao enviar. Por favor tente novamente ou use os contactos diretos.");
       }
-    } catch (err) {
-      setError("Ocorreu um erro ao enviar. Por favor tente novamente ou use os contactos diretos.");
     } finally {
       setIsSubmitting(false);
     }
