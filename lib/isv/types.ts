@@ -7,10 +7,33 @@ export type ParticleFilter = "euro6d" | "euro6dtemp" | "euro6c" | "euro6b" | "eu
 export type VehicleType =
   | "passageiros"
   | "comercial"
+  | "comercial_cx_fechada"
+  | "comercial_3_lug"
+  | "comercial_4x4"
+  | "comercial_cx_aberta"
+  | "comercial_cx_aberta_4x4"
+  | "comercial_misto"
+  | "comercial_mono"
+  | "comercial_nao_tributado_tabela_b"
+  | "ligeiro_2500kg"
+  | "passageiros_gpl"
+  | "passageiros_gn"
+  | "hibrido_veiculo"
+  | "hibrido_plugin_veiculo"
+  | "hibrido_plugin_euro6e"
   | "autocaravana"
   | "moto"
   | "eletrico"
   | "anterior1970";
+
+export type MercadoriaPercentType =
+  | "comercial_100"
+  | "comercial_10"
+  | "comercial_50"
+  | "comercial_15"
+  | "comercial_40"
+  | "autocaravana_80"
+  | "passageiros_100";
 
 export interface IsvInput {
   vehicleType: VehicleType;
@@ -26,6 +49,9 @@ export interface IsvInput {
   particles?: ParticleFilter;
   transferResidence?: boolean;
   disability?: boolean;
+  mercadoriaPercent?: MercadoriaPercentType;
+  electricRange?: number;
+  isEuro6eBis?: boolean;
 }
 
 export interface IsvBreakdown {

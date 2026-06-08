@@ -1,7 +1,9 @@
 import { createIsvBreakdown } from "./index";
-import type { IsvBreakdown, IsvInput } from "./types";
+import type { IsvBreakdown, IsvInput, MercadoriaPercentType } from "./types";
 import {
   CC_PASSAGEIROS,
+  CC_MERCADORIAS,
+  MERCADORIA_PERCENTAGES,
   CO2_GASOLINA_WLTP,
   CO2_GASOLEO_WLTP,
   CO2_GASOLINA_NEDC,
@@ -103,6 +105,99 @@ function calcDieselSurcharge(fuel: string, particles: string | undefined): numbe
   return 500;
 }
 
+/**
+ * Determina a percentagem de ISV a pagar com base no tipo de veículo.
+ */
+function getVehiclePayPercent(input: IsvInput): { useTabelaB: boolean; percent: number } {
+  switch (input.vehicleType) {
+    case "passageiros":
+      return { useTabelaB: false, percent: 1.0 };
+    case "comercial_cx_fechada":
+      return { useTabelaB: true, percent: 1.0 };
+    case "comercial_3_lug":
+      return { useTabelaB: true, percent: 0.10 };
+    case "comercial_4x4":
+      return { useTabelaB: true, percent: 0.50 };
+    case "comercial_cx_aberta":
+      return { useTabelaB: true, percent: 0.15 };
+    case "comercial_cx_aberta_4x4":
+      return { useTabelaB: true, percent: 0.50 };
+    case "comercial_misto":
+      return { useTabelaB: true, percent: 0.15 };
+    case "comercial_mono":
+      return { useTabelaB: true, percent: 0.10 };
+    case "comercial_nao_tributado_tabela_b":
+      return { useTabelaB: true, percent: 1.0 };
+    case "comercial":
+      return { useTabelaB: true, percent: 1.0 };
+    case "ligeiro_2500kg":
+      return { useTabelaB: false, percent: 0.40 };
+    case "passageiros_gpl":
+      return { useTabelaB: false, percent: 1.0 };
+    case "passageiros_gn":
+      return { useTabelaB: false, percent: 0.40 };
+    case "hibrido_veiculo":
+      return { useTabelaB: false, percent: 1.0 };
+    case "hibrido_plugin_veiculo":
+      return { useTabelaB: false, percent: 1.0 };
+    case "hibrido_plugin_euro6e":
+      return { useTabelaB: false, percent: 1.0 };
+    case "autocaravana":
+      return { useTabelaB: true, percent: 0.80 };
+    case "moto":
+      return { useTabelaB: false, percent: 1.0 };
+    case "eletrico":
+      return { useTabelaB: false, percent: 1.0 };
+    case "anterior1970":
+      return { useTabelaB: true, percent: 0.20 };
+    default:
+      return { useTabelaB: false, percent: 1.0 };
+  }
+}
+
+/**
+ * Verifica se o veículo é híbrido plug-in elegível para desconto.
+ * Regras:
+ * - 2021-2025: ≥50km autonomia E <50g/km CO2 → 25% (paga 25%)
+ * - 2015-2020: ≥25km autonomia (sem limite CO2) → 25% (paga 25%)
+ * - 2026+ Euro 6e-bis: ≥50km E ≤80g/km CO2 → 25% (paga 25%)
+ */
+function getHybridDiscount(input: IsvInput): number {
+  // Híbrido clássico (auto-recarregável): paga 60% → desconto 40%
+  if (input.fuel === "hibrido") {
+    return HYBRID_DISCOUNT; // 0.40
+  }
+
+  // Híbrido plug-in: paga 25% → desconto 75%
+  if (input.fuel === "hibrido_plugin") {
+    const year = input.year;
+    const range = input.electricRange ?? 0;
+    const co2 = input.co2;
+
+    // 2026+ com norma Euro 6e-bis: ≥50km E ≤80g/km
+    if (year >= 2026 && input.isEuro6eBis) {
+      if (range >= 50 && co2 <= 80) return PHEV_DISCOUNT;
+      return 0; // não cumpre → 100%
+    }
+
+    // 2021-2025: ≥50km E <50g/km
+    if (year >= 2021 && year <= 2025) {
+      if (range >= 50 && co2 < 50) return PHEV_DISCOUNT;
+      return 0; // não cumpre → 100%
+    }
+
+    // 2015-2020: ≥25km (sem limite CO2)
+    if (year >= 2015 && year <= 2020) {
+      if (range >= 25) return PHEV_DISCOUNT;
+      return 0; // não cumpre → 100%
+    }
+
+    return 0;
+  }
+
+  return 0;
+}
+
 export function calculateIsv(input: IsvInput): IsvBreakdown {
   const version = "Tabelas ISV 2026 (OE2026)";
 
@@ -115,19 +210,26 @@ export function calculateIsv(input: IsvInput): IsvBreakdown {
   }
 
   // --- Mapa de combustível para tabela CO2 ---
-  // gasolina, gpl, gn → gasolina | gasoleo → gasoleo
   const tableKey = FUEL_TO_CO2_TABLE[input.fuel];
   if (tableKey === undefined) {
     return createIsvBreakdown(0, 0, 0, 0, 0, 0, true, `Combustível "${input.fuel}" não suportado`, version);
   }
 
+  // Determina tabela CC e percentagem
+  const { useTabelaB, percent: vehiclePercent } = getVehiclePayPercent(input);
+
   // 1) Componente Cilindrada
-  //    fórmula: cc * taxa - abatimento (escalão único)
-  const ccBrac = getCcBrac(input.cc);
-  const ccComponent = input.cc * ccBrac.rate - ccBrac.deductible;
+  const ccTable = useTabelaB ? CC_MERCADORIAS : CC_PASSAGEIROS;
+  let ccComponent: number;
+  if (useTabelaB) {
+    const b = ccTable.find(b => input.cc <= b.limit) ?? ccTable[ccTable.length - 1];
+    ccComponent = input.cc * b.rate - b.deductible;
+  } else {
+    const b = ccTable.find(b => input.cc <= b.limit) ?? ccTable[ccTable.length - 1];
+    ccComponent = input.cc * b.rate - b.deductible;
+  }
 
   // 2) Componente Ambiental
-  //    fórmula: co2 * taxa - abatimento (escalão único)
   let co2Component: number;
   if (tableKey === "gasolina") {
     const b = getCo2BracGasolina(input.co2, input.cycle);
@@ -143,8 +245,7 @@ export function calculateIsv(input: IsvInput): IsvBreakdown {
   // 4) ISV bruto (antes de reduções/descontos)
   const isvGross = ccComponent + co2Component;
 
-  // 5) Redução para usados importados da UE — aplica-se a AMBAS as componentes (Total Bruto)
-  //    Nota: Conforme OE2025 e jurisprudência, a redução é sobre o total ISV (CC+CO2).
+  // 5) Redução para usados importados da UE
   let ageReductionPercent = 0;
   let ageDiscount = 0;
   if (input.origin === "ue" && input.condition === "usado") {
@@ -153,25 +254,31 @@ export function calculateIsv(input: IsvInput): IsvBreakdown {
     ageDiscount = isvGross * (ageReductionPercent / 100);
   }
 
-  // 6) Aplicar desconto ao ISV bruto e adicionar o agravamento diesel (que não sofre redução)
-  let isvAfterAge = (isvGross - ageDiscount) + dieselSurcharge;
+  // 6) Aplicar percentagem do tipo de veículo, redução idade e agravamento diesel
+  let isvAfterAge = (isvGross - ageDiscount) * vehiclePercent + dieselSurcharge;
 
-  // 7) Descontos híbrido (aplicados APÓS redução de idade e sobre o valor total)
-  if (input.fuel === "hibrido") {
-    isvAfterAge *= (1 - HYBRID_DISCOUNT);
-  }
-  if (input.fuel === "hibrido_plugin") {
-    isvAfterAge *= (1 - PHEV_DISCOUNT);
+  // 7) Descontos híbrido (aplicados APÓS percentagem do veículo)
+  const hybridDiscount = getHybridDiscount(input);
+  if (hybridDiscount > 0) {
+    isvAfterAge *= (1 - hybridDiscount);
   }
 
   // 8) ISV final — nunca negativo, arredondado a 2 casas decimais
   const finalTotal = Math.max(0, Math.round(isvAfterAge * 100) / 100);
 
-  const extraMsg = input.fuel === "hibrido"
-    ? "Híbrido clássico (40% desconto)"
-    : input.fuel === "hibrido_plugin"
-      ? "Híbrido plug-in (75% desconto)"
-      : undefined;
+  // Mensagem informativa
+  let extraMsg: string | undefined;
+  if (input.fuel === "hibrido") {
+    extraMsg = "Híbrido clássico — paga 60% do ISV";
+  } else if (input.fuel === "hibrido_plugin") {
+    if (hybridDiscount > 0) {
+      extraMsg = "Híbrido plug-in elegível — paga 25% do ISV";
+    } else {
+      extraMsg = "Híbrido plug-in não elegível — paga 100% do ISV";
+    }
+  } else if (vehiclePercent < 1.0) {
+    extraMsg = `Taxa intermédia: ${(vehiclePercent * 100).toFixed(0)}% do imposto`;
+  }
 
   return createIsvBreakdown(
     ccComponent,

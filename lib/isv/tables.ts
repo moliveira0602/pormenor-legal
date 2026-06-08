@@ -44,29 +44,30 @@ export const CO2_GASOLEO_WLTP: { limit: number; rate: number; deductible: number
 
 // ============================================================
 // COMPONENTE AMBIENTAL NEDC — Gasolina / GPL / GNV
+// Fonte: impostosobreveiculos.info / Diário da República
 // ============================================================
 
 export const CO2_GASOLINA_NEDC: { limit: number; rate: number; deductible: number }[] = [
-  { limit: 99, rate: 0.44, deductible: 43.02 },
-  { limit: 115, rate: 1.10, deductible: 115.80 },
-  { limit: 145, rate: 5.27, deductible: 619.17 },
-  { limit: 175, rate: 53.54, deductible: 7625.60 },
-  { limit: 195, rate: 64.88, deductible: 9605.37 },
-  { limit: 235, rate: 202.15, deductible: 36467.73 },
-  { limit: Infinity, rate: 233.81, deductible: 43910.96 },
+  { limit: 99, rate: 4.62, deductible: 427.00 },
+  { limit: 115, rate: 8.09, deductible: 750.99 },
+  { limit: 145, rate: 52.56, deductible: 5903.94 },
+  { limit: 175, rate: 61.24, deductible: 7140.17 },
+  { limit: 195, rate: 155.97, deductible: 23627.27 },
+  { limit: Infinity, rate: 205.65, deductible: 33390.12 },
 ];
 
 // ============================================================
 // COMPONENTE AMBIENTAL NEDC — Diesel / Gasóleo
+// Fonte: impostosobreveiculos.info / Diário da República
 // ============================================================
 
 export const CO2_GASOLEO_NEDC: { limit: number; rate: number; deductible: number }[] = [
-  { limit: 79, rate: 5.34, deductible: 400.23 },
-  { limit: 95, rate: 22.86, deductible: 1782.69 },
+  { limit: 79, rate: 5.78, deductible: 439.04 },
+  { limit: 95, rate: 23.45, deductible: 1848.58 },
   { limit: 120, rate: 79.22, deductible: 7195.63 },
-  { limit: 140, rate: 172.39, deductible: 18366.13 },
-  { limit: 160, rate: 197.35, deductible: 21848.84 },
-  { limit: Infinity, rate: 271.76, deductible: 33743.84 },
+  { limit: 140, rate: 175.73, deductible: 18924.92 },
+  { limit: 160, rate: 195.43, deductible: 21720.92 },
+  { limit: Infinity, rate: 268.42, deductible: 33447.90 },
 ];
 
 // ============================================================
@@ -87,6 +88,39 @@ export const AGE_REDUCTION = [
   { minYears: 9, maxYears: 10, percent: 75 },
   { minYears: 10, maxYears: Infinity, percent: 80 },
 ];
+
+// ============================================================
+// COMPONENTE CILINDRADA — TABELA B (Mercadorias / Comerciais)
+// Fórmula: cc * taxa - abatimento (escalão único)
+// ============================================================
+
+export const CC_MERCADORIAS: { limit: number; rate: number; deductible: number }[] = [
+  { limit: 1250, rate: 5.30, deductible: 3331.68 },
+  { limit: Infinity, rate: 12.58, deductible: 12138.47 },
+];
+
+// ============================================================
+// PERCENTAGENS TABELA B — por tipo de veículo mercadorias
+// ============================================================
+
+export type MercadoriaPercentKey =
+  | "comercial_100"        // Ligeiro mercadorias caixa fechada (100%)
+  | "comercial_10"         // Ligeiro mercadorias 3 lugares (10%)
+  | "comercial_50"         // Ligeiro mercadorias 4x4 (50%)
+  | "comercial_15"         // Misto / cx aberta s/4x4 (15%)
+  | "comercial_40"         // Monovolumes >2500kg 7lug (40%)
+  | "autocaravana_80"      // Autocaravana (80%)
+  | "passageiros_100";     // Ligeiro passageiros (100%)
+
+export const MERCADORIA_PERCENTAGES: Record<MercadoriaPercentKey, number> = {
+  comercial_100: 1.00,
+  comercial_10: 0.10,
+  comercial_50: 0.50,
+  comercial_15: 0.15,
+  comercial_40: 0.40,
+  autocaravana_80: 0.80,
+  passageiros_100: 1.00,
+};
 
 // ============================================================
 // COMBUSTÍVEL → tipo de tabela ambiental

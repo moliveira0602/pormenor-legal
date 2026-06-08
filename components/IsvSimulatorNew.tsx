@@ -15,6 +15,8 @@ const INITIAL_FORM: IsvInput = {
   cc: 0, co2: 0,
   fuel: "gasolina", cycle: "WLTP",
   particles: "less_than_0001",
+  electricRange: 0,
+  isEuro6eBis: false,
 };
 
 const DIAS = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -30,10 +32,24 @@ const ANOS = Array.from({ length: currentYear - 1969 }, (_, i) => currentYear + 
 
 const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
   passageiros: "Ligeiro de Passageiros",
-  comercial: "Comercial / Ligeiro de Mercadorias",
-  autocaravana: "Autocaravana",
+  comercial: "Comercial / Mercadorias (100%)",
+  comercial_cx_fechada: "Ligeiro Mercadorias Caixa Fechada (100%)",
+  comercial_3_lug: "Ligeiro Mercadorias 3 Lugares (10%)",
+  comercial_4x4: "Ligeiro Mercadorias 4x4 (50%)",
+  comercial_cx_aberta: "Ligeiro Mercadorias Caixa Aberta (15%)",
+  comercial_cx_aberta_4x4: "Ligeiro Mercadorias Caixa Aberta 4x4 (50%)",
+  comercial_misto: "Ligeiro Misto (15%)",
+  comercial_mono: "Monovolumes Mercadorias (10%)",
+  comercial_nao_tributado_tabela_b: "Ligeiro Mercadorias Não Tributado Tabela B (100%)",
+  ligeiro_2500kg: "Ligeiro >2500kg 7 Lugares (40%)",
+  passageiros_gpl: "Ligeiro Passageiros GPL (100%)",
+  passageiros_gn: "Ligeiro Passageiros Gás Natural (40%)",
+  hibrido_veiculo: "Ligeiro Híbrido (paga 60%)",
+  hibrido_plugin_veiculo: "Ligeiro Híbrido Plug-in (paga 25%)",
+  hibrido_plugin_euro6e: "Ligeiro Híbrido Plug-in Euro 6e-bis (paga 25%)",
+  autocaravana: "Autocaravana (80%)",
   moto: "Motociclo / Triciclo / Quadriciclo",
-  eletrico: "Elétrico Puro",
+  eletrico: "Elétrico Puro (Isento)",
   anterior1970: "Veículo Anterior a 1970",
 };
 const FUEL_LABELS: Record<FuelType, string> = {
@@ -134,9 +150,33 @@ export default function IsvSimulatorNew() {
           <div className={card}>
             <label className={lbl}>4. Tipo de Veículo</label>
             <select className={sel} value={form.vehicleType} onChange={e => update("vehicleType", e.target.value)} required>
-              <option value="passageiros">Ligeiro de Passageiros</option>
-              <option value="moto">Motociclo / Triciclo / Quadriciclo</option>
-              <option value="eletrico">Elétrico Puro (Isento)</option>
+              <optgroup label="Ligeiros de Passageiros">
+                <option value="passageiros">Ligeiro de Passageiros (100% Tabela A)</option>
+                <option value="ligeiro_2500kg">Ligeiro &gt;2500kg 7 Lugares (40%)</option>
+                <option value="passageiros_gpl">Ligeiro Passageiros GPL (100%)</option>
+                <option value="passageiros_gn">Ligeiro Passageiros Gás Natural (40%)</option>
+              </optgroup>
+              <optgroup label="Híbridos">
+                <option value="hibrido_veiculo">Híbrido (auto-recarregável) — paga 60%</option>
+                <option value="hibrido_plugin_veiculo">Híbrido Plug-in — paga 25%</option>
+                <option value="hibrido_plugin_euro6e">Híbrido Plug-in Euro 6e-bis — paga 25%</option>
+              </optgroup>
+              <optgroup label="Comerciais / Mercadorias (Tabela B)">
+                <option value="comercial_cx_fechada">Mercadorias Caixa Fechada (100%)</option>
+                <option value="comercial_3_lug">Mercadorias 3 Lugares (10%)</option>
+                <option value="comercial_4x4">Mercadorias 4x4 (50%)</option>
+                <option value="comercial_cx_aberta">Mercadorias Caixa Aberta (15%)</option>
+                <option value="comercial_cx_aberta_4x4">Mercadorias Caixa Aberta 4x4 (50%)</option>
+                <option value="comercial_misto">Ligeiro Misto (15%)</option>
+                <option value="comercial_mono">Monovolumes Mercadorias (10%)</option>
+                <option value="comercial_nao_tributado_tabela_b">Mercadorias Não Tributado Tabela B (100%)</option>
+              </optgroup>
+              <optgroup label="Outros">
+                <option value="autocaravana">Autocaravana (80% Tabela B)</option>
+                <option value="moto">Motociclo / Triciclo / Quadriciclo</option>
+                <option value="eletrico">Elétrico Puro (Isento)</option>
+                <option value="anterior1970">Veículo Anterior a 1970</option>
+              </optgroup>
             </select>
           </div>
         </div>
@@ -203,6 +243,27 @@ export default function IsvSimulatorNew() {
                 onChange={e => update("co2", Number(e.target.value))}
                 min="0" step="0.1" required placeholder="Ex: 34" />
             </div>
+          </div>
+        )}
+
+        {/* Linha 5: Dados Híbrido Plug-in */}
+        {(form.vehicleType === "hibrido_plugin_veiculo" || form.vehicleType === "hibrido_plugin_euro6e") && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={card}>
+              <label className={lbl}>10. Autonomia Elétrica (km)</label>
+              <input type="number" className={inp} value={form.electricRange || ""}
+                onChange={e => update("electricRange", Number(e.target.value))}
+                min="0" step="1" placeholder="Ex: 60" />
+              <p className="text-xs text-gray-500 mt-1">Mínimo 50km para elegibilidade (2021+) ou 25km (2015-2020)</p>
+            </div>
+            {form.vehicleType === "hibrido_plugin_euro6e" && (
+              <div className={card}>
+                <label className={lbl}>11. Norma Euro 6e-bis</label>
+                <div className="h-12 flex items-center">
+                  <span className="text-sm text-gray-700">Veículo homologado Euro 6e-bis (limite CO₂: ≤80 g/km)</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
